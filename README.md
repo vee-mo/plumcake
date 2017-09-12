@@ -1,5 +1,7 @@
 # Plumcake 0.0
-Evernot..ish quasi clone app ?_? I'm building to learn JS. Seriously, nothing fancy.
+Evernot..ish quasi clone app (???) I'm building to learn JS. Seriously, nothing fancy.
+
+_i feel lonely_
 
 Criticisms, tips or opinions much appreciated!
 
