@@ -1,0 +1,12 @@
+#todoNotebook li .edit {
+  display: none;
+}
+#todoNotebook li .editing {
+  display: block;
+}
+.hidden {
+  display: none;
+}
+.active {
+  display: block;
+}

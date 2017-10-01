@@ -15,7 +15,7 @@
 </head>
 <body>
 
-  <div class="" style="width: 500px; margin: auto;">
+  <section id="todo-app" class="" style="width: 500px; margin: auto;">
 
     <h1>Todo App</h1>
     <div class="">
@@ -23,28 +23,31 @@
     </div>
 
     <div class="">
-      <button onclick="handlers.addTodo()" class="btn btn-primary">Add </button>
       <input id="addTodoTextInput" type="text" name="add todo">
     </div>
 
-    <div class="">
-      <button onclick="handlers.changeTodo()" type="button" name="button">Change Todo</button>
-      <input id="changeTodoPositionInput" type="number" name="todoPosition" value="">
-      <input id="changeTodoTextInput" type="text" name="todoText" value="">
-    </div>
-
-    <div>
-      <button type="button" onclick="handlers.toggleCompleted()" name="toggleCompleted">Toggle completed</button>
-      <input id="toggleCompletedInput" type="number" name="togglePosition">
-    </div>
-    
     <div>
       <ul id="todoNotebook">
 
       </ul>
 
     </div>
-  </div>
+    <footer id="footer" class="hidden">
+      <span id="todoCountSpan"></span>
+      <ul id="filters">
+        <li>
+          <a href="#/all">All</a>
+        </li>
+        <li>
+          <a href="#/active">Active</a>
+        </li>
+        <li>
+          <a href="#/completed">Completed</a>
+        </li>
+      </ul>
+        <button type="button" name="clearCompleted">Clear Completed</button>
+    </footer>
+  </section>
    <!-- DOM ready JS -->
    <script src="main.js" charset="utf-8"></script>
    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
