@@ -8,6 +8,7 @@ const inputIdFilter = /todo[0-9]*/g;
 
 var todoList = {
   todos: [],
+  filter: 'all',
   addTodo: function(todoText) {
       this.todos.push({
           todoText: todoText,
@@ -49,7 +50,21 @@ var todoList = {
       }
     });
     return count;
-  }
+  },
+  getFilteredTodos: function() {
+    switch (this.filter) {
+      case 'all':
+        return this.todos;
+      case 'active':
+        return this.todos.filter(function(todo) {
+          return !todo.completed;
+        }, this);
+      case 'completed':
+        return this.todos.filter(function(todo) {
+          return todo.completed;
+        }, this);
+    }
+  },
 };
 
 //TODO: Select button to Display Todos
@@ -85,7 +100,7 @@ var handlers = {
     }
   },
   editTodo: function(event) {
-    //TODO: event listeners in view object. Sort them out
+    //TODO: event listeners in view module. Sort them out
     if (event.target.previousSibling.id.match(inputIdFilter)) {
       let todosInputLabel = event.target;
       let inputToHide = todosInputLabel.previousSibling;
@@ -125,8 +140,9 @@ var handlers = {
 };
 
 var view = {
-  displayTodos: function() {
-    let todosUl = document.querySelector('ul');
+  displayTodos: function(todos) {
+    let todosUl = document.getElementById('todoNotebook');
+    let filteredTodo = todoList.getFilteredTodos();
     todosUl.innerHTML = '';
     /* for (var i = 0; i < todoList.todos.length; i++) {
       var todosLi = document.createElement('li');
@@ -145,7 +161,8 @@ var view = {
       todosLi.appendChild(this.createDeleteButton());
       todosUl.appendChild(todosLi);
     }*/
-    todoList.todos.forEach(function(todo, position) {
+
+    filteredTodo.forEach(function(todo, position) {
       let todosDiv = document.createElement('div');
       let todosLi = document.createElement('li');
       let todosInput = document.createElement('input');
@@ -191,6 +208,7 @@ var view = {
   setUpEventListeners: function() {
     let todoNotebook = document.getElementById('todoNotebook');
     let addTodoTextInput = document.getElementById('addTodoTextInput');
+    let todosFilter = document.getElementById('filters');
 
     addTodoTextInput.addEventListener('keyup', function(event) {
       handlers.addTodo(event);
@@ -206,6 +224,13 @@ var view = {
       if (elementClicked.className === 'deleteButton') {
         //handlers.deleteTodo()
         handlers.deleteTodo(parseInt(elementClicked.parentNode.id));
+      }
+    });
+    todosFilter.addEventListener('click', function(event) {
+      if (event.target.tagName === 'A') {
+        let targetHref = event.target.getAttribute('href');
+        todoList.filter = targetHref.slice(1);
+        view.displayTodos();
       }
     });
   }
