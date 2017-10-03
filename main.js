@@ -1,5 +1,6 @@
 // jscs:disable maximumLineLength
 // jshint esversion: 6
+/*use strict*/
 
 //Object that contains all TODO function.
 const ENTER_KEY = 13;
@@ -65,6 +66,13 @@ var todoList = {
         }, this);
     }
   },
+  deleteCompletedTodos: function() {
+    this.todos.forEach(function(todo, i) {
+      if (todo.completed === true) {
+        this.todos.splice(i, 1);
+      }
+    }, this);
+  }
 };
 
 //TODO: Select button to Display Todos
@@ -136,32 +144,32 @@ var handlers = {
   toggleAll: function() {
     todoList.toggleAll();
     view.displayTodos();
+  },
+  clearCompletedTodos: function() {
+    todoList.deleteCompletedTodos();
+    todoList.filter = 'all';
+    view.displayTodos();
+  },
+  //TODO: don't like it. To make it simpler
+  setFilter: function(filter) {
+    todoList.filter = filter || 'all';
+    let filterHandlers = document.getElementById('filters').children;
+    for (let i = 0; i < filterHandlers.length; i++) {
+      let aChild = filterHandlers[i].children;
+      let aChildHref = aChild[0].getAttribute('href');
+      if (aChildHref.search(filter) > 0) {
+        aChild[0].className = 'selected';
+      }
+      view.displayTodos();
+    }
   }
 };
 
 var view = {
-  displayTodos: function(todos) {
+  displayTodos: function() {
     let todosUl = document.getElementById('todoNotebook');
     let filteredTodo = todoList.getFilteredTodos();
     todosUl.innerHTML = '';
-    /* for (var i = 0; i < todoList.todos.length; i++) {
-      var todosLi = document.createElement('li');
-      var todo = todoList.todos[i];
-      var todoTextWithCompletion = '';
-
-      // if completed add '(x)' else '()'
-      if (todo.completed === true) {
-        todoTextWithCompletion = '(x) ' + todo.todoText;
-      } else {
-        todoTextWithCompletion = '( ) ' + todo.todoText;
-      }
-
-      todosLi.id = i;
-      todosLi.textContent = todoTextWithCompletion;
-      todosLi.appendChild(this.createDeleteButton());
-      todosUl.appendChild(todosLi);
-    }*/
-
     filteredTodo.forEach(function(todo, position) {
       let todosDiv = document.createElement('div');
       let todosLi = document.createElement('li');
@@ -209,6 +217,7 @@ var view = {
     let todoNotebook = document.getElementById('todoNotebook');
     let addTodoTextInput = document.getElementById('addTodoTextInput');
     let todosFilter = document.getElementById('filters');
+    let clearCompletedBtn = document.getElementById('clearCompletedBtn');
 
     addTodoTextInput.addEventListener('keyup', function(event) {
       handlers.addTodo(event);
@@ -226,13 +235,19 @@ var view = {
         handlers.deleteTodo(parseInt(elementClicked.parentNode.id));
       }
     });
-    todosFilter.addEventListener('click', function(event) {
-      if (event.target.tagName === 'A') {
-        let targetHref = event.target.getAttribute('href');
-        todoList.filter = targetHref.slice(1);
-        view.displayTodos();
-      }
+    window.addEventListener('hashchange', function() {
+      this.conveyCurrentFilter();
+    }.bind(this));
+    window.onload = function() {
+      this.conveyCurrentFilter();
+    }.bind(this);
+    clearCompletedBtn.addEventListener('click', function() {
+      handlers.clearCompletedTodos();
     });
+  },
+  conveyCurrentFilter: function() {
+    let currentFilter = window.location.hash.slice(1) || 'all' ;
+    handlers.setFilter(currentFilter);
   }
 };
 
