@@ -5,7 +5,7 @@
 //Object that contains all TODO function.
 const ENTER_KEY = 13;
 const ESCAPE_KEY = 27;
-const inputIdFilter = /todo[0-9]*/g;
+const inputIdFilter = /[0-9a-z]{4,12}-{0,1}/ig;
 
 var todoList = {
   todos: [],
@@ -13,18 +13,26 @@ var todoList = {
   addTodo: function(todoText) {
       this.todos.push({
           todoText: todoText,
-          completed: false
+          completed: false,
+          uuid: util.createUUID()
         });
     },
   changeTodo: function(position, todoText) {
       this.todos[position].todoText = todoText;
     },
-  deleteTodo: function(position) {
-      this.todos.splice(position, 1);
+  deleteTodo: function(uuid) {
+      this.todos.forEach(function(todo, i) {
+          if (todo.uuid === uuid) {
+              this.todos.splice(i, 1);
+          }
+      }, this); //splice(position, 1);
     },
-  toggleCompleted: function(position) {
-      let todo = this.todos[position];
-      todo.completed = !todo.completed;
+  toggleCompleted: function(uuid) {
+      this.todos.forEach(function(todo, i) {
+          if (todo.uuid === uuid) {
+              todo.completed = !todo.completed;
+          }
+      }, this);
     },
   toggleAll: function() {
     let totalTodos = this.todos.length;
@@ -66,6 +74,7 @@ var todoList = {
         }, this);
     }
   },
+    //deleteCompleted does not delete all of the completed todos
   deleteCompletedTodos: function() {
     this.todos.forEach(function(todo, i) {
       if (todo.completed === true) {
@@ -75,6 +84,14 @@ var todoList = {
   }
 };
 
+let util = {
+    createUUID: function() {  
+   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {  
+      var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);  
+      return v.toString(16);  
+   });  
+} 
+}
 //TODO: Select button to Display Todos
 var handlers = {
   addTodo: function(event) {
@@ -95,20 +112,22 @@ var handlers = {
     todoList.changeTodo(position, todoText);
     view.displayTodos();
   },
-  deleteTodo: function(position) {
-    todoList.deleteTodo(position);
+  deleteTodo: function(uuid) {
+    todoList.deleteTodo(uuid);
     view.displayTodos();
   },
   toggleCompleted: function(event) {
-    let targetId = event.target.id;
-    if (targetId.match(inputIdFilter)) {
-      let parentLiPosition = event.target.parentNode.parentNode.id;
-      todoList.toggleCompleted(parentLiPosition);
+    let targetData = event.target.data;
+    if (targetData.match(inputIdFilter)) {
+        //Use .children the forEach to look for .data attribute to match UUID???
+      let uuidToToggle = event.target.parentNode.parentNode.id;
+      todoList.toggleCompleted(uuidToToggle);
       view.displayTodos();
     }
   },
   editTodo: function(event) {
     //TODO: event listeners in view module. Sort them out
+    //move let outside if statement
     if (event.target.previousSibling.id.match(inputIdFilter)) {
       let todosInputLabel = event.target;
       let inputToHide = todosInputLabel.previousSibling;
@@ -187,11 +206,12 @@ var view = {
         todosInput.checked = false;
         todoTextWithCompletion = todo.todoText;
       }
-
-      todosLi.id = position;
+    //Next doesn't fit with UUID
+    //Maybe better to give li the uuid as id and then use data attribute for input and label    
+      todosLi.id = todo.uuid;
       todosDiv.className = 'todoContainer';
       todosInput.type = 'checkbox';
-      todosInput.id = 'todo' + position;
+      todosInput.data = todo.uuid;
       todosInputLabel.textContent = todoTextWithCompletion;
       todosInputEdit.value = todoTextWithCompletion;
       todosInputEdit.className = 'edit';
@@ -232,7 +252,7 @@ var view = {
       let elementClicked = event.target;
       if (elementClicked.className === 'deleteButton') {
         //handlers.deleteTodo()
-        handlers.deleteTodo(parseInt(elementClicked.parentNode.id));
+        handlers.deleteTodo(elementClicked.parentNode.id);
       }
     });
     window.addEventListener('hashchange', function() {
