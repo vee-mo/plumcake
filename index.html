@@ -8,50 +8,52 @@
 
 
   <!-- CSS Sheets -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
-  <link rel="stylesheet" href="style.css">
+  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous"> -->
+  <link rel="stylesheet" href="css/flexboxgrid.min.css" type="text/css" >
+  <link rel="stylesheet" href="css/style.css">
 
    <title>Todo Application</title>
 </head>
 <body>
 
-  <section id="todo-app" class="" style="width: 500px; margin: auto;">
+  <main  class="container" id="todo-app">
+      <div class="heading">
+      <h1>Todo App</h1>
+    </div>
+      <div id="todo-header" class="">
+          <input class="check toggle" type="checkbox" id="toggleAll" />
+        <div style="max-width: 100%; float:left; flex:1; border: 1px solid #fff; overflow: hidden;">
+          <input id="addTodoTextInput" type="text" name="add todo" placeholder="Insert Task...">
+        </div>
+      </div>
 
-    <h1>Todo App</h1>
-    <div class="">
-      <button onclick="handlers.toggleAll()" class="btn btn-primary">Toggle All</button>
+      <div id="todosContainer">
+        <ul id="todoNotebook">
+
+        </ul>
+
     </div>
 
-    <div class="">
-      <input id="addTodoTextInput" type="text" name="add todo">
-    </div>
-
-    <div>
-      <ul id="todoNotebook">
-
-      </ul>
-
-    </div>
     <footer id="footer" class="hidden">
-      <span id="todoCountSpan"></span>
-      <ul id="filters">
-        <li>
-          <a href="#all">All</a>
-        </li>
-        <li>
-          <a href="#active">Active</a>
-        </li>
-        <li>
-          <a href="#completed">Completed</a>
-        </li>
-      </ul>
-        <button type="button" id ="clearCompletedBtn" name="clearCompleted">Clear Completed</button>
+        <span id="todoCountSpan"></span>
+        <ul id="filters">
+          <li>
+            <a href="#all">All</a>
+          </li>
+          <li>
+            <a href="#active">Active</a>
+          </li>
+          <li>
+            <a href="#completed">Completed</a>
+          </li>
+        </ul>
+          <button type="button" id ="clearCompletedBtn" name="clearCompleted">Clear Completed</button>
     </footer>
-  </section>
+  </main>
    <!-- DOM ready JS -->
    <script src="main.js" charset="utf-8"></script>
    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
-   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+   <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script> -->
 </body>
 </html>

@@ -1,13 +1,17 @@
 // jscs:disable maximumLineLength
 // jshint esversion: 6
-/*use strict*/
+/* global document */
+/* global window */
+/* global localStorage */
+(function() {
+'use strict';
 
 //Object that contains all TODO function.
 const ENTER_KEY = 13;
 const ESCAPE_KEY = 27;
-const inputIdFilter = /[0-9a-z]{4,12}-{0,1}/ig;
+//const UUID_FILTER = /[0-9a-z]{4,12}-{0,1}/ig;
 
-var todoList = {
+let todoList = {
   todos: [],
   filter: 'all',
   addTodo: function(todoText) {
@@ -17,22 +21,26 @@ var todoList = {
           uuid: util.createUUID()
         });
     },
-  changeTodo: function(position, todoText) {
-      this.todos[position].todoText = todoText;
+  changeTodo: function(uuid, todoText) {
+      this.todos.map(function(todo) {
+        if (todo.uuid === uuid) {
+          todo.todoText = todoText;
+        }
+      });
     },
   deleteTodo: function(uuid) {
       this.todos.forEach(function(todo, i) {
           if (todo.uuid === uuid) {
-              this.todos.splice(i, 1);
+            this.todos.splice(i, 1);
           }
-      }, this); //splice(position, 1);
+        }, this);
     },
   toggleCompleted: function(uuid) {
       this.todos.forEach(function(todo, i) {
           if (todo.uuid === uuid) {
-              todo.completed = !todo.completed;
+            todo.completed = !todo.completed;
           }
-      }, this);
+        }, this);
     },
   toggleAll: function() {
     let totalTodos = this.todos.length;
@@ -74,26 +82,32 @@ var todoList = {
         }, this);
     }
   },
-    //deleteCompleted does not delete all of the completed todos
   deleteCompletedTodos: function() {
-    this.todos.forEach(function(todo, i) {
-      if (todo.completed === true) {
-        this.todos.splice(i, 1);
-      }
-    }, this);
+    this.todos = this.todos.filter(function(todo) {
+      return !todo.completed;
+    });
   }
 };
 
 let util = {
-    createUUID: function() {  
-   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {  
-      var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);  
-      return v.toString(16);  
-   });  
-} 
-}
+  createUUID: function() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      let r = Math.random() * 16 | 0;
+      let v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  },
+  store: function(namespace, data) {
+    if (arguments.length > 1) {
+      localStorage.setItem(namespace, JSON.stringify(data));
+    } else {
+      let storedData = localStorage.getItem(namespace);
+      todoList.todos = JSON.parse(storedData) || [];
+    }
+  }
+};
 //TODO: Select button to Display Todos
-var handlers = {
+let handlers = {
   addTodo: function(event) {
     let addTodoTextInput = document.getElementById('addTodoTextInput');
     if (event.target === addTodoTextInput && event.keyCode === ENTER_KEY) {
@@ -108,60 +122,60 @@ var handlers = {
       view.displayTodos();
     }
   },
-  changeTodo: function(position, todoText) {
-    todoList.changeTodo(position, todoText);
+  changeTodo: function(uuid, todoText) {
+    todoList.changeTodo(uuid, todoText);
     view.displayTodos();
   },
   deleteTodo: function(uuid) {
     todoList.deleteTodo(uuid);
     view.displayTodos();
   },
-  toggleCompleted: function(event) {
-    let targetData = event.target.data;
-    if (targetData.match(inputIdFilter)) {
-        //Use .children the forEach to look for .data attribute to match UUID???
-      let uuidToToggle = event.target.parentNode.parentNode.id;
-      todoList.toggleCompleted(uuidToToggle);
+  toggleCompleted: function(uuid) {
+    todoList.toggleCompleted(uuid);
+    view.displayTodos();
+    // }
+  },
+  getTodoElements: function(el) {
+    let li = el.parentNode;
+    if (li.tagName.toUpperCase() === 'LI') {
+      let children = el.parentNode.children;
+      let names = ['checkbox', 'label', 'editInput', 'delete'];
+      let todoElements = {};
+      for (let i = 0; i < names.length; i++) {
+        todoElements[names[i]] = children[i];
+      }
+      todoElements.li = li;
+      return todoElements;
+    }
+  },
+  editingMode: function(el) {
+    let elements = this.getTodoElements(el);
+    elements.label.className = 'edit';
+    elements.editInput.className = 'editing';
+    elements.editInput.focus();
+    elements.editInput.select();
+  },
+  editTodo: function(e) {
+    let editInput = e.target;
+    let type = e.type;
+    let todoText = e.target.value;
+    let todoUUID = editInput.parentNode.id;
+    let originalValue = this.getTodoElements(e.target).label.textContent;
+
+    if (type === 'blur' || e.keyCode == ENTER_KEY) {
+      this.changeTodo(todoUUID, todoText);
+      view.displayTodos();
+      editInput.className = 'edit';
+    } else if (e.keyCode == ESCAPE_KEY) {
+      editInput.value = originalValue;
       view.displayTodos();
     }
   },
-  editTodo: function(event) {
-    //TODO: event listeners in view module. Sort them out
-    //move let outside if statement
-    if (event.target.previousSibling.id.match(inputIdFilter)) {
-      let todosInputLabel = event.target;
-      let inputToHide = todosInputLabel.previousSibling;
-      let inputToShow = todosInputLabel.nextSibling;
-      let parentLiPosition = todosInputLabel.parentNode.parentNode.id;
-      let originalValue = inputToShow.value; //don't like it
-      let that = this; //don't like it
-
-      todosInputLabel.className = 'edit';
-      inputToHide.className = 'edit';
-      inputToShow.className = 'editing';
-      inputToShow.focus();
-      inputToShow.select();
-      inputToShow.addEventListener('blur', function(event) {
-        let todoText = inputToShow.value;
-        that.changeTodo(parentLiPosition, todoText);
-        inputToShow.className = 'edit';
-        inputToHide.className = '';
-      });
-      inputToShow.addEventListener('keyup', function(event) {
-        if (event.keyCode === ENTER_KEY) {
-          let todoText = inputToShow.value;
-          that.changeTodo(parentLiPosition, todoText);
-          inputToShow.className = 'edit';
-          inputToHide.className = '';
-        } else if (event.keyCode === ESCAPE_KEY) {
-          inputToShow.value = originalValue;
-          that.displayTodos();
-        }
-      });
-    }
-  },
-  toggleAll: function() {
-    todoList.toggleAll();
+  toggleAll: function(e) {
+    let isChecked = e.target.checked;
+    todoList.todos.forEach(function(todo) {
+      todo.completed = isChecked;
+    });
     view.displayTodos();
   },
   clearCompletedTodos: function() {
@@ -184,69 +198,121 @@ var handlers = {
   }
 };
 
-var view = {
-  displayTodos: function() {
-    let todosUl = document.getElementById('todoNotebook');
-    let filteredTodo = todoList.getFilteredTodos();
-    todosUl.innerHTML = '';
-    filteredTodo.forEach(function(todo, position) {
-      let todosDiv = document.createElement('div');
-      let todosLi = document.createElement('li');
-      let todosInput = document.createElement('input');
-      let todosInputLabel = document.createElement('label');
-      let todosInputEdit = document.createElement('input');
-      let todoFooter = document.getElementById('footer');
-      let todoTextWithCompletion = '';
-
-      // if completed add '(x)' else '()'
-      if (todo.completed === true) {
-        todosInput.checked = true;
-        todoTextWithCompletion = todo.todoText;
-      } else {
-        todosInput.checked = false;
-        todoTextWithCompletion = todo.todoText;
-      }
-    //Next doesn't fit with UUID
-    //Maybe better to give li the uuid as id and then use data attribute for input and label    
-      todosLi.id = todo.uuid;
-      todosDiv.className = 'todoContainer';
-      todosInput.type = 'checkbox';
-      todosInput.data = todo.uuid;
-      todosInputLabel.textContent = todoTextWithCompletion;
-      todosInputEdit.value = todoTextWithCompletion;
-      todosInputEdit.className = 'edit';
-      todosInputEdit.type = 'text';
-      todosUl.appendChild(todosLi);
-      todosLi.appendChild(todosDiv);
-      todosDiv.appendChild(todosInput);
-      todosDiv.appendChild(todosInputLabel);
-      todosDiv.appendChild(todosInputEdit);
-      todosLi.appendChild(this.createDeleteButton());
-
-      todoFooter.className = 'active';
-      todoFooter.firstChild.textContent = todoList.countActiveTodo() + ' left';
-    }, this);
+//need to refactor to IIFE
+let view = {
+  init: function() {
+    util.store('todo-app');
+    this.displayTodos();
+    this.conveyCurrentFilter();
+    this.setUpEventListeners();
   },
-  createDeleteButton: function() {
-    let deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete';
-    deleteButton.className = 'deleteButton';
-    return deleteButton;
+  buildTodoUI: function() {
+    let todosUI = {
+      todosUl: document.getElementById('todoNotebook'),
+      todosContainer: document.getElementById('todosContainer'),
+      todoFooter: document.getElementById('footer'),
+      toggleAllInput: document.getElementById('toggleAll'),
+      todoCountSpan: document.getElementById('todoCountSpan'),
+      clearCompletedBtn: document.getElementById('clearCompletedBtn'),
+      todoTemplate: function() {
+        let elements = {
+          //todosDiv: document.createElement('div'),
+          todosLi: document.createElement('li'),
+          todosCheckbox: document.createElement('input'),
+          todosInputLabel: document.createElement('label'),
+          todosInputEdit: document.createElement('input'),
+          deleteButton: document.createElement('button')
+        };
+
+        //elements.todosDiv.className = 'todoContainer';
+        elements.todosCheckbox.type = 'checkbox';
+        elements.todosCheckbox.className = 'check';
+        elements.todosInputEdit.className = 'edit';
+        elements.todosInputEdit.type = 'text';
+        elements.todosInputLabel.className = 'todoText';
+        elements.deleteButton.textContent = 'x';
+        elements.deleteButton.className = 'deleteButton';
+        // elements.clearCompletedBtn.style.visibility = 'hidden';
+        return elements;
+      }
+    };
+    todosUI.todosUl.innerHTML = '';
+    return todosUI;
+  },
+  renderTodo: function(todo, ui) {
+    let template = new ui.todoTemplate();
+    let todoTextWithCompletion = '';
+
+    if (todo.completed === true) {
+      template.todosCheckbox.checked = true;
+      todoTextWithCompletion = todo.todoText;
+    } else {
+      template.todosCheckbox.checked = false;
+      todoTextWithCompletion = todo.todoText;
+    }
+    //Next doesn't fit with UUID
+    //Maybe better to give li the uuid as id and then use data attribute for input and label
+    template.todosLi.id = todo.uuid;
+    template.todosCheckbox.data = todo.uuid;
+    template.todosInputLabel.data = todoTextWithCompletion;
+    template.todosInputLabel.textContent = todoTextWithCompletion;
+    template.todosInputEdit.value = todoTextWithCompletion;
+    ui.todosUl.appendChild(template.todosLi);
+    template.todosLi.appendChild(template.todosCheckbox);
+    template.todosLi.appendChild(template.todosInputLabel);
+    template.todosLi.appendChild(template.todosInputEdit);
+    template.todosLi.appendChild(template.deleteButton);
+  },
+  displayTodos: function() {
+    let ui = this.buildTodoUI();
+    let filteredTodo = todoList.getFilteredTodos();
+    todosContainer.className = todoList.todos.length > 0 ? 'active' : 'hidden';
+    filteredTodo.forEach(function(todo) {
+      this.renderTodo(todo, ui);
+    }, this);
+    this.renderFooter(ui);
+    util.store('todo-app', todoList.todos);
+  },
+  renderFooter: function(ui) {
+    let activeTodoCount = todoList.countActiveTodo();
+    if (todoList.todos.length > 0) {
+      //does not fit with footer
+      if ((todoList.todos.length - activeTodoCount) === todoList.todos.length) {
+        ui.toggleAllInput.checked = true;
+      } else {
+        ui.toggleAllInput.checked = false;
+      }
+      ui.clearCompletedBtn.style.visibility = activeTodoCount !== todoList.todos.length ? 'visible' : 'hidden';
+      ui.todoFooter.className = 'active';
+      ui.todoCountSpan.textContent = activeTodoCount + ' left';
+    } else {
+      ui.todoFooter.className = 'hidden';
+    }
   },
   setUpEventListeners: function() {
     let todoNotebook = document.getElementById('todoNotebook');
     let addTodoTextInput = document.getElementById('addTodoTextInput');
     let todosFilter = document.getElementById('filters');
     let clearCompletedBtn = document.getElementById('clearCompletedBtn');
+    let toggleAllInput = document.getElementById('toggleAll');
 
     addTodoTextInput.addEventListener('keyup', function(event) {
       handlers.addTodo(event);
     });
     todoNotebook.addEventListener('change', function(event) {
-      handlers.toggleCompleted(event);
+      let target = event.target;
+      let todoUUID = target.data || '';
+      if (target.type === 'checkbox' && todoUUID) {
+        handlers.toggleCompleted(todoUUID);
+      }
     });
     todoNotebook.addEventListener('dblclick', function(event) {
-      handlers.editTodo(event);
+      if (event.target.className === 'todoText') {
+        handlers.editingMode(event.target);
+        event.target.nextSibling.addEventListener('blur', function(event) {
+          handlers.editTodo(event);
+        });
+      }
     });
     todoNotebook.addEventListener('click', function(event) {
       let elementClicked = event.target;
@@ -255,12 +321,17 @@ var view = {
         handlers.deleteTodo(elementClicked.parentNode.id);
       }
     });
+    todoNotebook.addEventListener('keyup', function(event) {
+      if (event.target.className === 'editing') {
+        handlers.editTodo(event);
+      }
+    });
+    toggleAllInput.addEventListener('change', function(event) {
+      handlers.toggleAll(event);
+    });
     window.addEventListener('hashchange', function() {
       this.conveyCurrentFilter();
     }.bind(this));
-    window.onload = function() {
-      this.conveyCurrentFilter();
-    }.bind(this);
     clearCompletedBtn.addEventListener('click', function() {
       handlers.clearCompletedTodos();
     });
@@ -270,5 +341,5 @@ var view = {
     handlers.setFilter(currentFilter);
   }
 };
-
-view.setUpEventListeners();
+view.init();
+})();

@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css?family=Work+Sans');
+
+body {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 1em;
+}
+
+body, .container, .heading {
+  background: #eee;
+}
+h1 {
+  font-size: 42px;
+  font-weight: 300;
+}
+
+li {
+  list-style-type: none;
+}
+input[type="checkbox"] {
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: 0;
+}
+input[type="checkbox"]:after {
+  position: relative;
+  top: 10px;
+  left: 10px;
+  width: 26px;
+  height: 26px;
+  margin: auto;
+  background: #1560BD;
+  content: "";
+  display:inline-block;
+}
+
+input[type="checkbox"]:checked:after {
+  content: "";
+  background: #FF0080;
+}
+
+button {
+  background: transparent;
+  box-shadow: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none;
+  border: none;
+  cursor: pointer;
+}
+.container {
+  max-width: 650px;
+}
+.heading {
+  height: fit-content;
+  text-align: center;
+}
+
+#todo-header, #todosContainer, #addTodoTextInput, #footer {
+  background: #fcfcfc;
+}
+
+#todo-header, #todosContainer, #footer {
+  border: 1px solid #eee;
+  overflow: hidden;
+  box-shadow: 1px 1px 3px #ccc;
+}
+
+
+#todo-header {
+  margin-bottom: 20px;
+  padding: 5px 0 5px 0;
+}
+.deleteButton {
+  display: none;
+  font-size: 1.3em;
+  font-weight: 700;
+  color: tomato;
+  float:right;
+}
+.deleteButton:hover {
+  display: block;
+}
+#clearCompletedBtn {
+  visibility: hidden;
+}
+
+#todoNotebook li label:hover ~ .deleteButton, .active {
+  display: block;
+  visibility: visible;
+}
+
+#todoNotebook li .edit, .hidden {
+  display: none!important;
+}
+#todo-header, #footer, #todoNotebook li {
+  display: flex;
+}
+
+#todoNotebook .editing, #footer #todoCountSpan, #footer #filters li, #footer #clearCompletedBtn, #todoNotebook li label {
+  flex: 1;
+}
+
+#todoNotebook li .editing {
+  border: 1px solid #808080;
+}
+
+#toggleAll {
+  border-right: 1px solid #ccc;
+}
+
+#addTodoTextInput, #todoNotebook li label, .editing {
+  font-size: 22px;
+}
+
+#addTodoTextInput {
+  width: 100%;
+  height: 45px;
+  border: none;
+  padding-left: 10px;
+}
+
+.check {
+  float: left;
+  width: 50px;
+  height: 50px;
+  margin: 0;
+}
+
+#todoNotebook li {
+  height: 50px;
+  margin: 10px 0 10px 0;
+}
+
+#todoNotebook li label {
+  padding: 5px;
+  line-height: 1.8em;
+}
+
+#todoNotebook {
+  width: 100%;
+  padding: 0;
+}
+
+#footer #filters {
+  flex: 8;
+  display: inline-flex;
+  padding: 0;
+  margin: 0 25px;
+}
+
+#footer #filters li {
+  margin: auto 5px;
+}
+
+#footer #filters li a {
+  display: block;
+  text-align: center;
+  width: 100%;
+  min-width: 30px;
+  border: 1px solid #956586;
+}
+
+#footer {
+  padding: 10px;
+}
