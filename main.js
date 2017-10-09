@@ -186,17 +186,23 @@ let handlers = {
   //TODO: don't like it. To make it simpler
   setFilter: function(filter) {
     todoList.filter = filter || 'all';
-    let filterHandlers = document.getElementById('filters').children;
-    for (let i = 0; i < filterHandlers.length; i++) {
-      let aChild = filterHandlers[i].children;
-      let aChildHref = aChild[0].getAttribute('href');
-      if (aChildHref.search(filter) > 0) {
-        aChild[0].className = 'selected';
-      }
-      view.displayTodos();
+    let parents = document.getElementById('filters').children;
+    let children = [];
+    for (let i = 0; i < parents.length; i++) {
+      let child = parents[i].children;
+      children.push(child[0][0]);
     }
-  }
-};
+    children.map(function(a) {
+      let href = a.getAttibute('href');
+      a.className = href.search(filter) > 0 ? 'selected' : '';
+    });
+      // let aChildHref = aChild[i].getAttribute('href');
+      // if (aChildHref.search(filter) > 0) {
+      //   aChild[0].className = 'selected';
+      // }
+      view.displayTodos();
+    },
+  };
 
 //need to refactor to IIFE
 let view = {

@@ -5,12 +5,20 @@ body {
   font-size: 1em;
 }
 
-body, .container, .heading {
-  background: #eee;
+body a {
+  text-decoration: none;
+  color: inherit;
 }
+
+body, .container, .heading, #todosContainer {
+  background: #FBF9FA;
+  color: #483B40;
+}
+
 h1 {
   font-size: 42px;
   font-weight: 300;
+  color: #F50057;
 }
 
 li {
@@ -25,19 +33,33 @@ input[type="checkbox"] {
 }
 input[type="checkbox"]:after {
   position: relative;
-  top: 10px;
+  top: 12px;
   left: 10px;
-  width: 26px;
-  height: 26px;
-  margin: auto;
-  background: #1560BD;
-  content: "";
-  display:inline-block;
+  font-family: 'FontAwesome';
+  font-size: 28px;
+  content: '\f1db';
+  color: #eee;
+  transition: all ease 0.5s;
 }
 
 input[type="checkbox"]:checked:after {
-  content: "";
-  background: #FF0080;
+  color: #22B3FF;
+}
+
+#toggleAll:after {
+    background: transparent;
+    font-family: 'FontAwesome';
+    content: "\f107";
+    color: #483B40;
+    font-size: 40px;
+    font-weight: 700;
+    position: relative;
+    top: 5px;
+    left: 12px;
+}
+
+#toggleAll:checked::after {
+  color: #F50057;
 }
 
 button {
@@ -50,24 +72,30 @@ button {
   border: none;
   cursor: pointer;
 }
+
 .container {
   max-width: 650px;
+  max-width: 650px;
 }
+
 .heading {
   height: fit-content;
   text-align: center;
 }
 
-#todo-header, #todosContainer, #addTodoTextInput, #footer {
-  background: #fcfcfc;
+#todo-header, #addTodoTextInput, #footer, #todoNotebook li {
+  background: #fff;
 }
 
-#todo-header, #todosContainer, #footer {
-  border: 1px solid #eee;
+#todo-header, #footer {
+  /*border: 1px solid #ccc;*/
   overflow: hidden;
-  box-shadow: 1px 1px 3px #ccc;
+  /*outline: 1px solid #F50057;*/
 }
 
+#todo-header, #footer, #todosContainer {
+  box-shadow: 5px 10px 55px #ccc;
+}
 
 #todo-header {
   margin-bottom: 20px;
@@ -99,7 +127,7 @@ button {
   display: flex;
 }
 
-#todoNotebook .editing, #footer #todoCountSpan, #footer #filters li, #footer #clearCompletedBtn, #todoNotebook li label {
+#todoNotebook .editing, #footer #todoCountSpan, #todoNotebook li label {
   flex: 1;
 }
 
@@ -108,7 +136,7 @@ button {
 }
 
 #toggleAll {
-  border-right: 1px solid #ccc;
+  border-right: 1px solid #F50057;
 }
 
 #addTodoTextInput, #todoNotebook li label, .editing {
@@ -122,16 +150,27 @@ button {
   padding-left: 10px;
 }
 
+#addTodoTextInput:focus {
+    outline: none;
+}
+
+#addTodoTextInput::placeholder {
+  color: #ddd;
+  font-size: inherit;
+}
 .check {
   float: left;
   width: 50px;
   height: 50px;
-  margin: 0;
+  margin: -1px 0;
 }
 
 #todoNotebook li {
   height: 50px;
-  margin: 10px 0 10px 0;
+  margin: 0;
+  padding: 5px;
+  margin: 1px 0;
+  outline: 1px solid rgba(52, 59, 64, 0.1);
 }
 
 #todoNotebook li label {
@@ -144,25 +183,42 @@ button {
   padding: 0;
 }
 
+#footer {
+  padding: 0px;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+#footer #clearCompletedBtn, #footer #todoCountSpan {
+  flex: 2;
+}
+
 #footer #filters {
-  flex: 8;
-  display: inline-flex;
-  padding: 0;
-  margin: 0 25px;
+  text-align: center;
+  flex: 5;
+  padding-left: 0;
 }
 
 #footer #filters li {
-  margin: auto 5px;
+  display: inline-block;
+  margin: auto 0;
+  width: 90px;
 }
-
+#footer #filters li a {
+  border: 1px solid #ccc;
+}
+#footer #filters li a:hover {
+  border: 1px solid #22B3FF;
+}
+#footer #filters li a.selected {
+  border: 1px solid #22B3FF;
+}
 #footer #filters li a {
   display: block;
-  text-align: center;
-  width: 100%;
-  min-width: 30px;
-  border: 1px solid #956586;
+width: 100%;
 }
-
-#footer {
-  padding: 10px;
+#todoCountSpan {
+  position:relative;
+  top: 14px;
+  left: 30px;
 }
