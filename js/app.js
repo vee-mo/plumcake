@@ -3,13 +3,13 @@
 /* global document */
 /* global window */
 /* global localStorage */
-let todoApp = (function() {
+const todoApp = (function() {
   'use strict';
 
   const ENTER_KEY = 13;
   const ESCAPE_KEY = 27;
 
-  let todoList = (function() {
+  const todoList = (function() {
     let todos = [];
     // let filter;
 
@@ -117,7 +117,7 @@ let todoApp = (function() {
     };
   })();
 
-  let util = {
+  const util = {
     createUUID: function() {
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         let r = Math.random() * 16 | 0;
@@ -135,7 +135,7 @@ let todoApp = (function() {
     // }
   };
 
-  let handlers = (function() {
+  const handlers = (function() {
     const addTodo = (event) => {
       let addTodoTextInput = document.getElementById('addTodoTextInput');
       if (event.target === addTodoTextInput && event.keyCode === ENTER_KEY) {
@@ -232,7 +232,7 @@ let todoApp = (function() {
     };
   })();
 
-  let view = (function() {
+  const view = (function() {
     let todos = todoList.todos;
 
     const init = () => {
@@ -385,23 +385,8 @@ let todoApp = (function() {
   };
 })();
 
-let switcher = (function() {
+const switcher = (function() {
   const playGround = document.getElementById('playGround');
-  const loadJsCss = (filename, filetype) => {
-    if (filetype === 'js') { //if filename is a external JavaScript file
-      let fileref = document.createElement('script');
-      fileref.setAttribute('type', 'text/javascript');
-      fileref.setAttribute('src', filename);
-      document.getElementById('appFooter').appendChild(fileref);
-      return fileref;
-    } else if (filetype === 'css') { //if filename is an external CSS file
-      var fileref = document.createElement('link');
-      fileref.setAttribute('rel', 'stylesheet');
-      fileref.setAttribute('type', 'text/css');
-      fileref.setAttribute('href', filename);
-      document.getElementsByTagName('head')[0].appendChild(fileref);
-    }
-  };
   const getHtml = (app) => {
     app = app === 'todo' ? 'todo-app.html' : 'note-app.html';
     let xhr = new XMLHttpRequest();
@@ -425,13 +410,11 @@ let switcher = (function() {
   };
   const renderNoteApp = () => {
     let xhr = getHtml('note');
-    let notejs = loadJsCss('js/quill.min.js', 'js');
-    loadJsCss('css/quill.snow.css', 'css');
+    // let notejs = loadJsCss('js/quill.min.js', 'js');
+    // loadJsCss('css/quill.snow.css', 'css');
     // loadJsCss('js/quill.min.js', 'js');
     xhr.onload = () => {
-      notejs.onload = () => {
-        noteApp.init();
-      };
+      noteApp.init();
     };
     xhr.send();
   };
@@ -446,26 +429,91 @@ let switcher = (function() {
 })();
 // switcher.renderTodoApp();
 
-let noteApp = (function() {
+const noteApp = (function() {
   let quill;
-  const init = () => {
-    quill = new Quill('#editor', {
-      theme: 'snow'
-    });
-    loadNote();
-    document.getElementById('saveNote').addEventListener('click', saveNote);
-  };
 
-  const saveNote = () => {
-    let delta = quill.getContents();
-    localStorage.setItem('note-app', JSON.stringify(delta));
-  };
+  const notes = (function() {
+    //
+    const saveNote = () => {
+      let delta = quill.getContents();
+      localStorage.setItem('note-app', JSON.stringify(delta));
+    };
+    const loadNote = () => {
+      let delta = JSON.parse(localStorage.getItem('note-app'));
+      quill.setContents(delta);
+    };
 
-  const loadNote = () => {
-    let delta = JSON.parse(localStorage.getItem('note-app'));
-    quill.setContents(delta);
-  };
+    //END NOTES MODULE
+    return {
+      saveNote: saveNote,
+      loadNote: loadNote
+    };
+  })();
+
+  const handlers = (function() {
+    const init = () => {
+      let noteJs = util.loadJsCss('js/quill.min.js', 'js');
+      let noteCss = util.loadJsCss('css/quill.snow.css', 'css');
+      noteJs.onload = function() {
+        quill = new Quill('#editor', {
+          theme: 'snow'
+        });
+        notes.loadNote();
+      };
+      view.setUpEventListeners();
+    };
+    const saveNote = () => {
+      //Defines delta quill to save via notes module
+      //triggers on quill.ontextchange event listener via view
+    };
+
+    //END HANDLERS MODULE
+    return {
+      init: init,
+    };
+  })();
+
+  const view = (function() {
+    const setUpEventListeners = () => {
+      document.getElementById('saveNote').addEventListener('click', notes.saveNote);
+    };
+
+    const editingMode = () => {
+      //show toolbar and allow edit
+    };
+    const readOnlyMode = () => {
+      //hides toolbars and disables editing
+    };
+    //END VIEW MODULE
+    return {
+      setUpEventListeners: setUpEventListeners
+    };
+  })();
+
+  const util = (function() {
+    const loadJsCss = (filename, filetype) => {
+      let section = document.getElementById('noteAppPlayGround');
+      if (filetype === 'js') { //if filename is a external JavaScript file
+        let fileref = document.createElement('script');
+        fileref.setAttribute('type', 'text/javascript');
+        fileref.setAttribute('src', filename);
+        section.appendChild(fileref);
+        return fileref;
+      } else if (filetype === 'css') { //if filename is an external CSS file
+        var fileref = document.createElement('link');
+        fileref.setAttribute('rel', 'stylesheet');
+        fileref.setAttribute('type', 'text/css');
+        fileref.setAttribute('href', filename);
+        section.insertBefore(fileref, section.firstChild);
+      }
+    };
+    return {
+      loadJsCss: loadJsCss
+    };
+  })();
+
+  //END NOTEAPP IIFE
   return {
-    init: init
+    init: handlers.init
   };
 })();
