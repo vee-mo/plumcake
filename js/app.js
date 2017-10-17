@@ -452,11 +452,18 @@ const noteApp = (function() {
 
   const handlers = (function() {
     const init = () => {
-      let noteJs = util.loadJsCss('js/quill.min.js', 'js');
-      let noteCss = util.loadJsCss('css/quill.snow.css', 'css');
+      let noteJs = util.loadJsCss('js/quill.core.js', 'js');
+      let noteCss = util.loadJsCss('css/quill.core.css', 'css');
       noteJs.onload = function() {
+        editor();
         quill = new Quill('#editor', {
-          theme: 'snow'
+          modules: {
+            xtoolbar: {
+                container: '#tooltip-controls',
+                sidebar: '#sidebar-controls'
+              }
+          }
+          // theme: 'snow'
         });
         notes.loadNote();
       };
@@ -512,6 +519,75 @@ const noteApp = (function() {
     };
   })();
 
+  const editor = () => {
+    // Register toolbar module
+    Quill.register('modules/xtoolbar', function(quill, options) {
+      let container = document.querySelector(options.container);
+      let mediaControls = document.querySelector(options.sidebar);
+      let formatButtons = container.querySelectorAll('button');
+      let mediaButtons = mediaControls.querySelectorAll('button');
+      formatButtons.forEach(function(btn, i) {
+        let formatToApply = btn.className.substring(4);
+        let format = quill.getFormat();
+        btn.addEventListener('click', function() {
+          if (formatToApply !== 'link') {
+            quill.format(formatToApply, !format[formatToApply]);
+          } else {
+            let url = getLinkUrl();
+            quill.format(formatToApply, url);
+          }
+        });
+      });
+      const getLinkUrl = () => {
+        //
+      };
+      //TEST
+      quill.on('selection-change', function(range, oldRange, source) {
+    if (range) {
+      if (range.length == 0) {
+        console.log('User cursor is on', range.index);
+      } else {
+        var text = quill.getText(range.index, range.length);
+        console.log('User has highlighted', text, source);
+      }
+    } else {
+      console.log('Cursor not in the editor');
+    }
+  });
+    });
+
+    //Register Formatting
+    let Inline = Quill.import('blots/inline');
+
+    class BoldBlot extends Inline { }
+    BoldBlot.blotName = 'bold';
+    BoldBlot.tagName = 'strong';
+
+    class ItalicBlot extends Inline { }
+    ItalicBlot.blotName = 'italic';
+    ItalicBlot.tagName = 'em';
+
+    class LinkBlot extends Inline {
+      static create(value) {
+        let node = super.create();
+        // Sanitize url value if desired
+        node.setAttribute('href', value);
+        node.setAttribute('target', '_blank');
+        return node;
+      }
+
+      static formats(node) {
+        return node.getAttribute('href');
+      }
+    }
+    LinkBlot.blotName = 'link';
+    LinkBlot.tagName = 'a';
+
+    Quill.register(LinkBlot);
+    Quill.register(BoldBlot);
+    Quill.register(ItalicBlot);
+
+  };
   //END NOTEAPP IIFE
   return {
     init: handlers.init
