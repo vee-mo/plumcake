@@ -233,6 +233,7 @@ const todoApp = (function() {
   })();
 
   const view = (function() {
+    //TODO: refactor with querySelector
     let todos = todoList.todos;
 
     const init = () => {
@@ -534,12 +535,26 @@ const noteApp = (function() {
             quill.format(formatToApply, !format[formatToApply]);
           } else {
             let url = getLinkUrl();
-            quill.format(formatToApply, url);
+            // quill.format(formatToApply, url);
+            quill.format('link', 'url');
           }
         });
       });
+      const setLinkUrl = () => {
+        //display link tooltip
+        let url = getLinkUrl();
+        //hide tooltip
+        return url;
+      };
       const getLinkUrl = () => {
-        //
+        let url = document.querySelector('#linkTooltip input').value;
+        let linkBtn = document.querySelector('#linkTooltip button');
+        linkBtny.onclick = () => {
+          if (url) {
+            return url;
+          }
+        };
+
       };
       //TEST
       quill.on('selection-change', function(range, oldRange, source) {
@@ -568,10 +583,10 @@ const noteApp = (function() {
     ItalicBlot.tagName = 'em';
 
     class LinkBlot extends Inline {
-      static create(value) {
+      static create(url) {
         let node = super.create();
         // Sanitize url value if desired
-        node.setAttribute('href', value);
+        node.setAttribute('href', url);
         node.setAttribute('target', '_blank');
         return node;
       }
@@ -590,6 +605,7 @@ const noteApp = (function() {
   };
   //END NOTEAPP IIFE
   return {
-    init: handlers.init
+    init: handlers.init,
+    quill: quill
   };
 })();
