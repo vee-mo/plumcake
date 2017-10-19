@@ -456,7 +456,9 @@ const noteApp = (function() {
       let noteJs = util.loadJsCss('js/quill.core.js', 'js');
       let noteCss = util.loadJsCss('css/quill.core.css', 'css');
       noteJs.onload = function() {
-        editor();
+        editor(); //TODO: editors needs to be a module. Here it should call editor.init()
+
+        //TODO: the following goes in editor.init()
         quill = new Quill('#editor', {
           modules: {
             xtoolbar: {
@@ -466,6 +468,7 @@ const noteApp = (function() {
           }
           // theme: 'snow'
         });
+        quill.addContainer(document.querySelector('#linkTooltip')); //Need really to move to editor module!!!
         notes.loadNote();
       };
       view.setUpEventListeners();
@@ -534,27 +537,32 @@ const noteApp = (function() {
           if (formatToApply !== 'link') {
             quill.format(formatToApply, !format[formatToApply]);
           } else {
-            let url = getLinkUrl();
+            displayLinkTooltip();
             // quill.format(formatToApply, url);
-            quill.format('link', 'url');
+            // quill.format('link', 'url');
           }
         });
       });
-      const setLinkUrl = () => {
-        //display link tooltip
-        let url = getLinkUrl();
-        //hide tooltip
-        return url;
-      };
-      const getLinkUrl = () => {
-        let url = document.querySelector('#linkTooltip input').value;
+      const displayLinkTooltip = () => {
+        let linkTooltip = document.querySelector('#linkTooltip');
         let linkBtn = document.querySelector('#linkTooltip button');
-        linkBtny.onclick = () => {
-          if (url) {
-            return url;
-          }
-        };
+        let rangeBounds = quill.getBounds(quill.getSelection());
 
+        linkTooltip.className = 'visible';
+        console.log(rangeBounds); //TEST
+        //TODO calculate linkTooltip width to display it always at the center
+        linkTooltip.style.left = (rangeBounds.left + rangeBounds.width / 2) + 'px';
+        linkTooltip.style.top = (rangeBounds.top + rangeBounds.height * 1.3) + 'px';
+        linkBtn.onclick = () => {
+          let url = document.querySelector('#linkTooltip input').value;
+          if (url) {
+            formatLink(url);
+          }
+          linkTooltip.className = 'hidden';
+        };
+      };
+      const formatLink = (url) => {
+        quill.format('link', url);
       };
       //TEST
       quill.on('selection-change', function(range, oldRange, source) {
@@ -562,8 +570,11 @@ const noteApp = (function() {
       if (range.length == 0) {
         console.log('User cursor is on', range.index);
       } else {
+        let rangeBounds = quill.getBounds(range);
         var text = quill.getText(range.index, range.length);
-        console.log('User has highlighted', text, source);
+        // console.log('User has highlighted', text, source);
+        // console.log(rangeBounds);
+        // console.log(range);
       }
     } else {
       console.log('Cursor not in the editor');
