@@ -533,13 +533,20 @@ const noteApp = (function() {
       formatButtons.forEach(function(btn, i) {
         let formatToApply = btn.className.substring(4);
         let format = quill.getFormat();
-        btn.addEventListener('click', function() {
-          if (formatToApply !== 'link') {
+        //make it a setUpToolTipListener()
+        //button need to be toggle for undoing the format
+        //TODO: fix code so can iterate getFormat() object so to assign correct status to button
+        // for a given selection
+        btn.addEventListener('click', function(e) {
+          if (formatToApply === 'header') {
+            let h = e.target.parentNode.id.substring(7, 8);
+            quill.format('header', h);
+          } else if (formatToApply !== 'link') {
             quill.format(formatToApply, !format[formatToApply]);
-          } else {
-            displayLinkTooltip();
             // quill.format(formatToApply, url);
             // quill.format('link', 'url');
+          } else {
+            displayLinkTooltip();
           }
         });
       });
@@ -550,9 +557,9 @@ const noteApp = (function() {
 
         linkTooltip.className = 'visible';
         console.log(rangeBounds); //TEST
-        //TODO calculate linkTooltip width to display it always at the center
-        linkTooltip.style.left = (rangeBounds.left + rangeBounds.width / 2) + 'px';
-        linkTooltip.style.top = (rangeBounds.top + rangeBounds.height * 1.3) + 'px';
+        //change 140 if you change div width
+        linkTooltip.style.left = (rangeBounds.left + rangeBounds.width / 2 - 140) + 'px';
+        linkTooltip.style.top = (rangeBounds.top + rangeBounds.height + 5) + 'px';
         linkBtn.onclick = () => {
           let url = document.querySelector('#linkTooltip input').value;
           if (url) {
@@ -584,6 +591,7 @@ const noteApp = (function() {
 
     //Register Formatting
     let Inline = Quill.import('blots/inline');
+    let Block = Quill.import('blots/block');
 
     class BoldBlot extends Inline { }
     BoldBlot.blotName = 'bold';
@@ -609,6 +617,21 @@ const noteApp = (function() {
     LinkBlot.blotName = 'link';
     LinkBlot.tagName = 'a';
 
+    class BlockquoteBlot extends Block { }
+    BlockquoteBlot.blotName = 'blockquote';
+    BlockquoteBlot.tagName = 'blockquote';
+
+    class HeaderBlot extends Block {
+      static formats(node) {
+        return HeaderBlot.tagName.indexOf(node.tagName) + 1;
+      }
+    }
+
+    HeaderBlot.blotName = 'header';
+    HeaderBlot.tagName = ['H1', 'H2'];
+
+    Quill.register(BlockquoteBlot);
+    Quill.register(HeaderBlot);
     Quill.register(LinkBlot);
     Quill.register(BoldBlot);
     Quill.register(ItalicBlot);
