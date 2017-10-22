@@ -2,14 +2,23 @@
 <!-- <link rel="stylesheet" href="css/quill.snow.css" /> -->
 <!-- ciaoo -->
 <section id="noteAppPlayGround">
-  <div id="tooltip-controls">
+  <div id="tooltip-controls" class="hidden" style="background: #fff; padding: 5px; width: 280px; overflow:hidden;"><!-- TEMP STYLE -->
   <!-- need to give buttons a selected status to get from quill.getFormat() to dynamically determine the format state of a selected range -->
-  <button id="bold-button" class="--p-bold"><i class="fa fa-bold"></i></button>
-  <button id="italic-button" class="--p-italic"><i class="fa fa-italic"></i></button>
-  <button id="link-button" class="--p-link"><i class="fa fa-link"></i></button>
-  <button id="blockquote-button"class="--p-blockquote"><i class="fa fa-quote-right"></i></button>
-  <button id="header-1-button" class="--p-header"><i class="fa fa-header"><sub>1</sub></i></button>
-  <button id="header-2-button" class="--p-header"><i class="fa fa-header"><sub>2</sub></i></button>
+  <div id="formats" class="active">
+    <button id="bold-button" class="--p-bold" format="bold"><i class="fa fa-bold"></i></button>
+    <button id="italic-button" class="--p-italic" format="italic"><i class="fa fa-italic"></i></button>
+    <button id="link-button" class="--p-link" format="link"><i class="fa fa-link"></i></button>
+    <button id="header-1-button" class="--p-header" format="header"><i class="fa fa-header"><sub>1</sub></i></button>
+    <button id="header-2-button" class="--p-header" format="header"><i class="fa fa-header"><sub>2</sub></i></button>
+    <button id="blockquote-button"class="--p-blockquote" format="blockquote"><i class="fa fa-quote-right"></i></button>
+    <button id="code-button"class="--p-code" format="code"><b><i class="fa fa-code"></i></b></button>
+  </div>
+  <div id="linkTooltip" class="hidden">
+    <input type="text" class="" id="link-input" placeholder="insert url..." />
+    <button for="link-input" type="submit">
+      INSERT URL
+    </button>
+  </div>
 </div>
 <div id="sidebar-controls">
   <button id="image-button"><i class="fa fa-camera"></i></button>
@@ -22,12 +31,12 @@
   <p>Some initial <strong>bold</strong> text </p>
   <p><br></p>
   </div>
-  <div id="linkTooltip" class="hidden" style="position: absolute; background: #fff; padding: 5px; width: 280px;"> <!-- TEMP STYLE -->
+  <!-- <div id="linkTooltip" class="hidden" style="position: absolute; background: #fff; padding: 5px; width: 280px;">
     <input type="text" class="" id="link-input" placeholder="insert url..." />
     <button for="link-input" type="submit">
       INSERT URL
     </button>
-  </div>
+  </div> -->
   <button id="saveNote" type="button">SAVE</button>
 </section>
 

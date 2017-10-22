@@ -1,8 +1,30 @@
 // jscs:disable maximumLineLength
+// jscs:disable disallowMultipleVarDecl
 // jshint esversion: 6
 /* global document */
 /* global window */
 /* global localStorage */
+
+const commons = {
+  changeVisibility: (arr) => {
+    arr.map((el) => {
+      el.className = el.className === 'active' ? 'hidden' : 'active';
+    });
+  },
+  once: function(func) {
+    let ran = false, memo; //jscs:disable disallowMultipleVarDecl
+    return function() {
+      if (ran) {
+        return memo;
+      }
+      ran = true;
+      memo = func.apply(this, arguments);
+      func = null;
+      console.log('ran'); //TEST
+      return memo;
+    };
+  }
+};
 const todoApp = (function() {
   'use strict';
 
@@ -113,7 +135,7 @@ const todoApp = (function() {
       getFilteredTodos: getFilteredTodos,
       deleteCompletedTodos: deleteCompletedTodos,
       setFilter: setFilter,
-      store: store
+      store: store //to pass to controller
     };
   })();
 
@@ -189,7 +211,7 @@ const todoApp = (function() {
       let type = e.type;
       let todoText = e.target.value;
       let todoUUID = editInput.parentNode.id;
-      let originalValue = this.getTodoElements(e.target).label.textContent;
+      let originalValue = getTodoElements(e.target).label.textContent;
       if (type === 'blur' || e.keyCode == ENTER_KEY) {
         changeTodo(todoUUID, todoText);
         view.displayTodos();
@@ -431,17 +453,20 @@ const switcher = (function() {
 // switcher.renderTodoApp();
 
 const noteApp = (function() {
+  const ENTER_KEY = 13;
+  const ESCAPE_KEY = 27;
   let quill;
 
   const notes = (function() {
     //
-    const saveNote = () => {
-      let delta = quill.getContents();
+    const saveNote = (delta) => {
+      // let delta = quill.getContents();
       localStorage.setItem('note-app', JSON.stringify(delta));
     };
     const loadNote = () => {
       let delta = JSON.parse(localStorage.getItem('note-app'));
-      quill.setContents(delta);
+      // quill.setContents(delta);
+      return delta;
     };
 
     //END NOTES MODULE
@@ -456,37 +481,30 @@ const noteApp = (function() {
       let noteJs = util.loadJsCss('js/quill.core.js', 'js');
       let noteCss = util.loadJsCss('css/quill.core.css', 'css');
       noteJs.onload = function() {
-        editor(); //TODO: editors needs to be a module. Here it should call editor.init()
-
-        //TODO: the following goes in editor.init()
-        quill = new Quill('#editor', {
-          modules: {
-            xtoolbar: {
-                container: '#tooltip-controls',
-                sidebar: '#sidebar-controls'
-              }
-          }
-          // theme: 'snow'
-        });
-        quill.addContainer(document.querySelector('#linkTooltip')); //Need really to move to editor module!!!
-        notes.loadNote();
+        editor.init();
+        loadNote();
       };
       view.setUpEventListeners();
     };
     const saveNote = () => {
-      //Defines delta quill to save via notes module
-      //triggers on quill.ontextchange event listener via view
+      let delta = quill.getContents();
+      notes.saveNote(delta);
     };
-
+    const loadNote = () => {
+      let delta = notes.loadNote();
+      quill.setContents(delta);
+    };
     //END HANDLERS MODULE
     return {
       init: init,
+      saveNote: saveNote
+      // loadNote: loadNote
     };
   })();
 
   const view = (function() {
     const setUpEventListeners = () => {
-      document.getElementById('saveNote').addEventListener('click', notes.saveNote);
+      // document.getElementById('saveNote').addEventListener('click', notes.saveNote);
     };
 
     const editingMode = () => {
@@ -523,123 +541,241 @@ const noteApp = (function() {
     };
   })();
 
-  const editor = () => {
-    // Register toolbar module
-    Quill.register('modules/xtoolbar', function(quill, options) {
-      let container = document.querySelector(options.container);
-      let mediaControls = document.querySelector(options.sidebar);
-      let formatButtons = container.querySelectorAll('button');
-      let mediaButtons = mediaControls.querySelectorAll('button');
-      formatButtons.forEach(function(btn, i) {
-        let formatToApply = btn.className.substring(4);
-        let format = quill.getFormat();
-        //make it a setUpToolTipListener()
-        //button need to be toggle for undoing the format
-        //TODO: fix code so can iterate getFormat() object so to assign correct status to button
-        // for a given selection
-        btn.addEventListener('click', function(e) {
-          if (formatToApply === 'header') {
-            let h = e.target.parentNode.id.substring(7, 8);
-            quill.format('header', h);
-          } else if (formatToApply !== 'link') {
-            quill.format(formatToApply, !format[formatToApply]);
-            // quill.format(formatToApply, url);
-            // quill.format('link', 'url');
-          } else {
-            displayLinkTooltip();
+  const editor = (function() {
+    const registerToolbar = () => {
+      Quill.register('modules/xtoolbar', function(quill, options) {
+        let container = document.querySelector(options.container);
+        let mediaControls = document.querySelector(options.sidebar);
+      });
+    };
+    const instEditor = () => {
+      quill = new Quill('#editor', {
+        modules: {
+          xtoolbar: {
+              container: '#tooltip-controls',
+              sidebar: '#sidebar-controls'
+            }
+        }
+      });
+      quill.addContainer(document.querySelector('#tooltip-controls'));
+    };
+    const setUpToolbars = () => {
+      let controls = document.querySelector('#tooltip-controls');
+      let formats = controls.querySelector('#formats');
+      let linkBar = controls.querySelector('#linkTooltip');
+      let insertBtn = linkBar.querySelector('button');
+      let insertInput = linkBar.querySelector('input');
+
+      const setUpBtns = () => {
+        let formatButtons = formats.querySelectorAll('button');
+        // let mediaButtons = mediaControls.querySelectorAll('button');
+
+        formatButtons.forEach(function(btn, i) {
+          btn.addEventListener('click', function(e) {
+            applyFormat(this);
+          });
+        });
+        insertBtn.onclick = function() {
+          let url = insertInput.value;
+          insertUrl(url);
+        };
+        insertInput.addEventListener('keyup', function(e) {
+          if (e.keyCode === ENTER_KEY) {
+            let url = insertInput.value;
+            insertUrl(url);
           }
         });
-      });
-      const displayLinkTooltip = () => {
-        let linkTooltip = document.querySelector('#linkTooltip');
-        let linkBtn = document.querySelector('#linkTooltip button');
-        let rangeBounds = quill.getBounds(quill.getSelection());
+      };
+      const applyFormat = (btn) => {
+        let formatToApply = btn.getAttribute('format');
+        let format = quill.getFormat();
 
-        linkTooltip.className = 'visible';
-        console.log(rangeBounds); //TEST
-        //change 140 if you change div width
-        linkTooltip.style.left = (rangeBounds.left + rangeBounds.width / 2 - 140) + 'px';
-        linkTooltip.style.top = (rangeBounds.top + rangeBounds.height + 5) + 'px';
-        linkBtn.onclick = () => {
-          let url = document.querySelector('#linkTooltip input').value;
-          if (url) {
-            formatLink(url);
+        if (formatToApply === 'header') {
+          if (!btn.selected) {
+            let h = parseInt(btn.querySelector('sub').textContent);
+            quill.format('header', h);
+          } else {
+            quill.format('header', false);
           }
-          linkTooltip.className = 'hidden';
-        };
+          resetToolbarView();
+        } else if (formatToApply !== 'link') {
+          quill.format(formatToApply, !format[formatToApply]);
+          // quill.format(formatToApply, url);
+          // quill.format('link', 'url');
+          resetToolbarView();
+        } else {
+          displayLinkbar(btn);
+        }
       };
-      const formatLink = (url) => {
-        quill.format('link', url);
+
+      const displayLinkbar = (btn) => {
+        if (btn.selected) {
+          insertUrl();
+        }
+        commons.changeVisibility([formats, linkBar]);
+        insertInput.focus();
+        linkTooltipFix();
       };
-      //TEST
-      quill.on('selection-change', function(range, oldRange, source) {
-    if (range) {
-      if (range.length == 0) {
-        console.log('User cursor is on', range.index);
-      } else {
-        let rangeBounds = quill.getBounds(range);
-        var text = quill.getText(range.index, range.length);
-        // console.log('User has highlighted', text, source);
-        // console.log(rangeBounds);
-        // console.log(range);
+      const insertUrl = (url) => {
+        if (url) {
+          quill.format('link', url);
+        } else {
+          quill.format('link', false);
+        }
+        commons.changeVisibility([formats, linkBar]);
+        insertInput.value = '';
+        resetToolbarView();
+      };
+
+      const linkTooltipFix = () => {
+        quill.off('selection-change');
+        document.addEventListener('click', selectionChangeOff);
+      };
+      const resetToolbarView = () => {
+        controls.className = 'hidden';
+        formats.className = 'active';
+        linkBar.className = 'hidden';
+        controls.style.position = '';
+        document.removeEventListener('click', selectionChangeOff);
+        quill.off('selection-change');
+        quill.on('selection-change', selectionChangeOn);
+      };
+      const selectionChangeOn = (range) => {
+        // quill.on('selection-change', function(range, oldRange, source) {
+        if (range) {
+          if (range.length > 0) {
+            let rangeBounds = quill.getBounds(range);
+            displayControls(rangeBounds);
+          } else {
+            resetToolbarView();
+          }
+        } else {
+          resetToolbarView();
+        }
+        // });
+      };
+      const displayControls = (bounds) => {
+        controls.className = 'active';
+        controls.style.position = 'absolute';
+        controls.style.left = (bounds.left + bounds.width / 2 - 140) + 'px';
+        controls.style.top = (bounds.top + bounds.height + 5) + 'px';
+        let format = quill.getFormat();
+        displayCurrentFormat(format);
+      };
+      const selectionChangeOff = (e) => {
+        let target = e.target;
+        if (!controls.contains(target)) {
+          resetToolbarView();
+        }
+      };
+      function displayCurrentFormat(format) {
+        resetToggledBtns();
+        for (let key in format) {
+          let current = format[key];
+          if (key === 'header') {
+            let hbtn = controls.querySelector(`#header-${current}-button`);
+            hbtn.classList.add('toggled');
+            hbtn.selected = true;
+          } else {
+            let btn = controls.querySelector(`button[format=${key}`);
+            btn.classList.add('toggled');
+            //maybe not necessary
+            btn.selected = true;
+          }
+          // if (current && typeof current === 'boolean') {
+          //   let btn = controls.querySelector(`.--p-${key}`);
+          //   btn.classList.add('toggled');
+          //   //maybe not necessary
+          //   btn.selected = true;
+          // } else {
+          //   let hbtn = controls.querySelector(`#header-${current}-button`);
+          //   hbtn.classList.add('toggled');
+          //   hbtn.selected = true;
+          // }
+        }
       }
-    } else {
-      console.log('Cursor not in the editor');
-    }
-  });
-    });
+      const resetToggledBtns = () => {
+        let arr = controls.querySelectorAll('.toggled');
+        for (let i = 0; i < arr.length; i++) {
+          arr[i].classList.remove('toggled');
+          arr[i].selected = false;
+        }
+      };
+
+      //TODO: better to return an obj ans set it all app in editor.init?
+      resetToolbarView();
+      setUpBtns();
+    };
 
     //Register Formatting
-    let Inline = Quill.import('blots/inline');
-    let Block = Quill.import('blots/block');
+    const registerFormatBlots = () => {
+      let Inline = Quill.import('blots/inline');
+      let Block = Quill.import('blots/block');
 
-    class BoldBlot extends Inline { }
-    BoldBlot.blotName = 'bold';
-    BoldBlot.tagName = 'strong';
+      class BoldBlot extends Inline { }
+      BoldBlot.blotName = 'bold';
+      BoldBlot.tagName = 'strong';
 
-    class ItalicBlot extends Inline { }
-    ItalicBlot.blotName = 'italic';
-    ItalicBlot.tagName = 'em';
+      class ItalicBlot extends Inline { }
+      ItalicBlot.blotName = 'italic';
+      ItalicBlot.tagName = 'em';
 
-    class LinkBlot extends Inline {
-      static create(url) {
-        let node = super.create();
-        // Sanitize url value if desired
-        node.setAttribute('href', url);
-        node.setAttribute('target', '_blank');
-        return node;
+      class LinkBlot extends Inline {
+        static create(url) {
+          let node = super.create();
+          // Sanitize url value if desired
+          node.setAttribute('href', url);
+          node.setAttribute('target', '_blank');
+          return node;
+        }
+
+        static formats(node) {
+          return node.getAttribute('href');
+        }
       }
+      LinkBlot.blotName = 'link';
+      LinkBlot.tagName = 'a';
 
-      static formats(node) {
-        return node.getAttribute('href');
+      class BlockquoteBlot extends Block { }
+      BlockquoteBlot.blotName = 'blockquote';
+      BlockquoteBlot.tagName = 'blockquote';
+
+      class HeaderBlot extends Block {
+        static formats(node) {
+          return HeaderBlot.tagName.indexOf(node.tagName) + 1;
+        }
       }
-    }
-    LinkBlot.blotName = 'link';
-    LinkBlot.tagName = 'a';
+      HeaderBlot.blotName = 'header';
+      HeaderBlot.tagName = ['H1', 'H2'];
 
-    class BlockquoteBlot extends Block { }
-    BlockquoteBlot.blotName = 'blockquote';
-    BlockquoteBlot.tagName = 'blockquote';
+      class CodeBlot extends Block { }
+      BlockquoteBlot.blotName = 'code';
+      BlockquoteBlot.tagName = 'code';
 
-    class HeaderBlot extends Block {
-      static formats(node) {
-        return HeaderBlot.tagName.indexOf(node.tagName) + 1;
-      }
-    }
+      Quill.register(BlockquoteBlot);
+      Quill.register(HeaderBlot);
+      Quill.register(LinkBlot);
+      Quill.register(BoldBlot);
+      Quill.register(ItalicBlot);
+      Quill.register(CodeBlot);
+    };
 
-    HeaderBlot.blotName = 'header';
-    HeaderBlot.tagName = ['H1', 'H2'];
-
-    Quill.register(BlockquoteBlot);
-    Quill.register(HeaderBlot);
-    Quill.register(LinkBlot);
-    Quill.register(BoldBlot);
-    Quill.register(ItalicBlot);
-
-  };
+    const autosave = () => {
+      quill.on('text-change', notes.saveNote);
+    };
+    const init = () => {
+      registerToolbar();
+      registerFormatBlots();
+      instEditor();
+      setUpToolbars();
+      autosave();
+    };
+    return {
+      init: init
+    };
+  })();
   //END NOTEAPP IIFE
   return {
-    init: handlers.init,
-    quill: quill
+    init: handlers.init
   };
 })();

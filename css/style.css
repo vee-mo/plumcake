@@ -233,3 +233,6 @@ button {
   top: 14px;
   left: 30px;
 }
+.toggled {
+  color: green;
+}

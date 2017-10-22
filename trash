@@ -304,3 +304,67 @@
 //     handlers.setFilter(currentFilter);
 //   }
 // };
+// Register toolbar module
+// Quill.register('modules/xtoolbar', function(quill, options) {
+//   let container = document.querySelector(options.container);
+//   let mediaControls = document.querySelector(options.sidebar);
+//   let formatButtons = container.querySelectorAll('button');
+//   let mediaButtons = mediaControls.querySelectorAll('button');
+//   formatButtons.forEach(function(btn, i) {
+//     let formatToApply = btn.className.substring(4);
+//     let format = quill.getFormat();
+//     //make it a setUpToolTipListener()
+//     //button need to be toggle for undoing the format
+//     //TODO: fix code so can iterate getFormat() object so to assign correct status to button
+//     // for a given selection
+//     btn.addEventListener('click', function(e) {
+//       if (formatToApply === 'header') {
+//         let h = e.target.parentNode.id.substring(7, 8);
+//         quill.format('header', h);
+//       } else if (formatToApply !== 'link') {
+//         quill.format(formatToApply, !format[formatToApply]);
+//         // quill.format(formatToApply, url);
+//         // quill.format('link', 'url');
+//       } else {
+//         displayTooltip();
+//       }
+//     });
+//   });
+//   const displayTooltip = () => {
+//     let linkTooltip = document.querySelector('#linkTooltip');
+//     let linkBtn = document.querySelector('#linkTooltip button');
+//     let rangeBounds = quill.getBounds(quill.getSelection());
+//
+//     linkTooltip.className = 'visible';
+//     console.log(rangeBounds); //TEST
+//     //change 140 if you change div width
+//     linkTooltip.style.left = (rangeBounds.left + rangeBounds.width / 2 - 140) + 'px';
+//     linkTooltip.style.top = (rangeBounds.top + rangeBounds.height + 5) + 'px';
+//     linkBtn.onclick = () => {
+//       let url = document.querySelector('#linkTooltip input').value;
+//       if (url) {
+//         formatLink(url);
+//       }
+//       linkTooltip.className = 'hidden';
+//     };
+//   };
+//   const formatLink = (url) => {
+//     quill.format('link', url);
+//   };
+//   //TEST
+//   quill.on('selection-change', function(range, oldRange, source) {
+//     if (range) {
+//       if (range.length == 0) {
+//         console.log('User cursor is on', range.index);
+//       } else {
+//         let rangeBounds = quill.getBounds(range);
+//         var text = quill.getText(range.index, range.length);
+//         // console.log('User has highlighted', text, source);
+//         // console.log(rangeBounds);
+//         // console.log(range);
+//       }
+//     } else {
+//       console.log('Cursor not in the editor');
+//     }
+//   });
+// });
