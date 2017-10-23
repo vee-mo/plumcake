@@ -559,153 +559,295 @@ const noteApp = (function() {
       });
       quill.addContainer(document.querySelector('#tooltip-controls'));
     };
-    const setUpToolbars = () => {
-      let controls = document.querySelector('#tooltip-controls');
-      let formats = controls.querySelector('#formats');
-      let linkBar = controls.querySelector('#linkTooltip');
-      let insertBtn = linkBar.querySelector('button');
-      let insertInput = linkBar.querySelector('input');
-
-      const setUpBtns = () => {
-        let formatButtons = formats.querySelectorAll('button');
-        // let mediaButtons = mediaControls.querySelectorAll('button');
-
-        formatButtons.forEach(function(btn, i) {
-          btn.addEventListener('click', function(e) {
-            applyFormat(this);
+    function setUpFormatting() {
+      const formattingBar = {
+        controls: document.querySelector('#tooltip-controls'),
+        formats: this.controls.querySelector('#formats'),
+        linkBar: this.controls.querySelector('#linkTooltip'),
+        insertBtn: this.linkBar.querySelector('button'),
+        insertInput: this.linkBar.querySelector('input'),
+        formatButtons: this.formats.querySelectorAll('button'),
+        setUpBtns: function() {
+          // let mediaButtons = mediaControls.querySelectorAll('button');
+          this.formatButtons.forEach(function(btn, i) {
+            btn.addEventListener('click', function(e) {
+              this.applyFormat(btn);
+            }, this);
           });
-        });
-        insertBtn.onclick = function() {
-          let url = insertInput.value;
-          insertUrl(url);
-        };
-        insertInput.addEventListener('keyup', function(e) {
-          if (e.keyCode === ENTER_KEY) {
-            let url = insertInput.value;
-            insertUrl(url);
-          }
-        });
-      };
-      const applyFormat = (btn) => {
-        let formatToApply = btn.getAttribute('format');
-        let format = quill.getFormat();
+          this.insertBtn.onclick = function() {
+            let url = this.insertInput.value;
+            this.insertUrl(url);
+          };
+          this.insertInput.addEventListener('keyup', function(e) {
+            if (e.keyCode === ENTER_KEY) {
+              let url = this.insertInput.value;
+              this.insertUrl(url);
+            } else if (e.keyCode === ESCAPE_KEY) {
+              this.resetToolbarView();
+            }
+          });
+        },
+        applyFormat: function(btn) {
+          let formatToApply = btn.getAttribute('format');
+          let format = quill.getFormat();
 
-        if (formatToApply === 'header') {
-          if (!btn.selected) {
-            let h = parseInt(btn.querySelector('sub').textContent);
-            quill.format('header', h);
+          if (formatToApply === 'header') {
+            if (!btn.selected) {
+              let h = parseInt(btn.querySelector('sub').textContent);
+              quill.format('header', h);
+            } else {
+              quill.format('header', false);
+            }
+            this.resetToolbarView();
+          } else if (formatToApply !== 'link') {
+            quill.format(formatToApply, !format[formatToApply]);
+            // quill.format(formatToApply, url);
+            // quill.format('link', 'url');
+            this.resetToolbarView();
           } else {
-            quill.format('header', false);
+            this.displayLinkbar(btn);
           }
-          resetToolbarView();
-        } else if (formatToApply !== 'link') {
-          quill.format(formatToApply, !format[formatToApply]);
-          // quill.format(formatToApply, url);
-          // quill.format('link', 'url');
-          resetToolbarView();
-        } else {
-          displayLinkbar(btn);
-        }
-      };
-
-      const displayLinkbar = (btn) => {
-        if (btn.selected) {
-          insertUrl();
-        }
-        commons.changeVisibility([formats, linkBar]);
-        insertInput.focus();
-        linkTooltipFix();
-      };
-      const insertUrl = (url) => {
-        if (url) {
-          quill.format('link', url);
-        } else {
-          quill.format('link', false);
-        }
-        commons.changeVisibility([formats, linkBar]);
-        insertInput.value = '';
-        resetToolbarView();
-      };
-
-      const linkTooltipFix = () => {
-        quill.off('selection-change');
-        document.addEventListener('click', selectionChangeOff);
-      };
-      const resetToolbarView = () => {
-        controls.className = 'hidden';
-        formats.className = 'active';
-        linkBar.className = 'hidden';
-        controls.style.position = '';
-        document.removeEventListener('click', selectionChangeOff);
-        quill.off('selection-change');
-        quill.on('selection-change', selectionChangeOn);
-      };
-      const selectionChangeOn = (range) => {
-        // quill.on('selection-change', function(range, oldRange, source) {
-        if (range) {
-          if (range.length > 0) {
-            let rangeBounds = quill.getBounds(range);
-            displayControls(rangeBounds);
+        },
+        displayLinkbar: function(btn) {
+          if (btn.selected) {
+            this.insertUrl();
+          }
+          commons.changeVisibility([this.formats, this.linkBar]);
+          this.insertInput.focus();
+          this.linkTooltipFix();
+        },
+        insertUrl: function(url) {
+          if (url) {
+            quill.format('link', url);
           } else {
-            resetToolbarView();
+            quill.format('link', false);
           }
-        } else {
-          resetToolbarView();
-        }
-        // });
-      };
-      const displayControls = (bounds) => {
-        controls.className = 'active';
-        controls.style.position = 'absolute';
-        controls.style.left = (bounds.left + bounds.width / 2 - 140) + 'px';
-        controls.style.top = (bounds.top + bounds.height + 5) + 'px';
-        let format = quill.getFormat();
-        displayCurrentFormat(format);
-      };
-      const selectionChangeOff = (e) => {
-        let target = e.target;
-        if (!controls.contains(target)) {
-          resetToolbarView();
-        }
-      };
-      function displayCurrentFormat(format) {
-        resetToggledBtns();
-        for (let key in format) {
-          let current = format[key];
-          if (key === 'header') {
-            let hbtn = controls.querySelector(`#header-${current}-button`);
-            hbtn.classList.add('toggled');
-            hbtn.selected = true;
+          commons.changeVisibility([this.formats, this.linkBar]);
+          this.insertInput.value = '';
+          this.resetToolbarView();
+        },
+        linkTooltipFix: function() {
+          quill.off('selection-change');
+          document.addEventListener('click', this.selectionChangeOff);
+        },
+        resetToolbarView: function() {
+          this.controls.className = 'hidden';
+          this.formats.className = 'active';
+          this.linkBar.className = 'hidden';
+          this.controls.style.position = '';
+          document.removeEventListener('click', this.selectionChangeOff);
+          quill.off('selection-change');
+          quill.on('selection-change', this.selectionChangeOn);
+        },
+        selectionChangeOn: function(range) {
+          // quill.on('selection-change', function(range, oldRange, source) {
+          if (range) {
+            if (range.length > 0) {
+              let rangeBounds = quill.getBounds(range);
+              this.displayControls(rangeBounds);
+            } else {
+              this.resetToolbarView();
+            }
           } else {
-            let btn = controls.querySelector(`button[format=${key}`);
-            btn.classList.add('toggled');
-            //maybe not necessary
-            btn.selected = true;
+            this.resetToolbarView();
           }
-          // if (current && typeof current === 'boolean') {
-          //   let btn = controls.querySelector(`.--p-${key}`);
-          //   btn.classList.add('toggled');
-          //   //maybe not necessary
-          //   btn.selected = true;
-          // } else {
-          //   let hbtn = controls.querySelector(`#header-${current}-button`);
-          //   hbtn.classList.add('toggled');
-          //   hbtn.selected = true;
-          // }
+          // });
+        },
+        displayControls: function(bounds) {
+          this.controls.className = 'active';
+          this.controls.style.position = 'absolute';
+          this.controls.style.left = (bounds.left + bounds.width / 2 - this.controls.offsetWidth / 2) + 'px';
+          this.controls.style.top = (bounds.top + bounds.height + 5) + 'px';
+          let format = quill.getFormat();
+          displayCurrentFormat(format);
+        },
+        selectionChangeOff: function(e) {
+          let target = e.target;
+          if (!this.controls.contains(target)) {
+            this.resetToolbarView();
+          }
+        },
+        displayCurrentFormat: function(format) {
+          this.resetToggledBtns();
+          for (let key in format) {
+            let current = format[key];
+            if (key === 'header') {
+              let hbtn = this.controls.querySelector(`#header-${current}-button`);
+              hbtn.classList.add('toggled');
+              hbtn.selected = true;
+            } else {
+              let btn = this.controls.querySelector(`button[format=${key}`);
+              btn.classList.add('toggled');
+              //maybe not necessary
+              btn.selected = true;
+            }
+          }
+        },
+        resetToggledBtns: function() {
+          let arr = this.controls.querySelectorAll('.toggled');
+          for (let i = 0; i < arr.length; i++) {
+            arr[i].classList.remove('toggled');
+            arr[i].selected = false;
+          }
         }
-      }
-      const resetToggledBtns = () => {
-        let arr = controls.querySelectorAll('.toggled');
-        for (let i = 0; i < arr.length; i++) {
-          arr[i].classList.remove('toggled');
-          arr[i].selected = false;
-        }
+        // this.resetToolbarView();
+        // setUpBtns();
       };
-
-      //TODO: better to return an obj ans set it all app in editor.init?
-      resetToolbarView();
-      setUpBtns();
-    };
+      const keyBindings = {
+        //
+      };
+      setUpFormatting.setUpBtns();
+      setUpFormatting.resetToolbarView();
+    }
+    // const setUpToolbars = () => {
+    //   let this.controls = document.querySelector('#tooltip-controls');
+    //   let this.formats = controls.querySelector('#formats');
+    //   let this.linkBar = controls.querySelector('#linkTooltip');
+    //   let insertBtn = linkBar.querySelector('button');
+    //   let this.insertInput = linkBar.querySelector('input');
+    //
+    //   const setUpBtns = () => {
+    //     let formatButtons = formats.querySelectorAll('button');
+    //     // let mediaButtons = mediaControls.querySelectorAll('button');
+    //
+    //     formatButtons.forEach(function(btn, i) {
+    //       btn.addEventListener('click', function(e) {
+    //         this.applyFormat(this);
+    //       });
+    //     });
+    //     insertBtn.onclick = function() {
+    //       let url = insertInput.value;
+    //       this.insertUrl(url);
+    //     };
+    //     insertInput.addEventListener('keyup', function(e) {
+    //       if (e.keyCode === ENTER_KEY) {
+    //         let url = insertInput.value;
+    //         this.insertUrl(url);
+    //       } else if (e.keyCode === ESCAPE_KEY) {
+    //         this.resetToolbarView();
+    //       }
+    //     });
+    //   };
+    //   const this.applyFormat = (btn) => {
+    //     let formatToApply = btn.getAttribute('format');
+    //     let format = quill.getFormat();
+    //
+    //     if (formatToApply === 'header') {
+    //       if (!btn.selected) {
+    //         let h = parseInt(btn.querySelector('sub').textContent);
+    //         quill.format('header', h);
+    //       } else {
+    //         quill.format('header', false);
+    //       }
+    //       this.resetToolbarView();
+    //     } else if (formatToApply !== 'link') {
+    //       quill.format(formatToApply, !format[formatToApply]);
+    //       // quill.format(formatToApply, url);
+    //       // quill.format('link', 'url');
+    //       this.resetToolbarView();
+    //     } else {
+    //       this.displayLinkbar(btn);
+    //     }
+    //   };
+    //
+    //   const this.displayLinkbar = (btn) => {
+    //     if (btn.selected) {
+    //       this.insertUrl();
+    //     }
+    //     commons.changeVisibility([formats, linkBar]);
+    //     insertInput.focus();
+    //     this.linkTooltipFix();
+    //   };
+    //   const this.insertUrl = (url) => {
+    //     if (url) {
+    //       quill.format('link', url);
+    //     } else {
+    //       quill.format('link', false);
+    //     }
+    //     commons.changeVisibility([formats, linkBar]);
+    //     insertInput.value = '';
+    //     this.resetToolbarView();
+    //   };
+    //
+    //   const this.linkTooltipFix = () => {
+    //     quill.off('selection-change');
+    //     document.addEventListener('click', this.selectionChangeOff);
+    //   };
+    //   const this.resetToolbarView = () => {
+    //     controls.className = 'hidden';
+    //     formats.className = 'active';
+    //     linkBar.className = 'hidden';
+    //     controls.style.position = '';
+    //     document.removeEventListener('click', this.selectionChangeOff);
+    //     quill.off('selection-change');
+    //     quill.on('selection-change', this.selectionChangeOn);
+    //   };
+    //   const this.selectionChangeOn = (range) => {
+    //     // quill.on('selection-change', function(range, oldRange, source) {
+    //     if (range) {
+    //       if (range.length > 0) {
+    //         let rangeBounds = quill.getBounds(range);
+    //         this.displayControls(rangeBounds);
+    //       } else {
+    //         this.resetToolbarView();
+    //       }
+    //     } else {
+    //       this.resetToolbarView();
+    //     }
+    //     // });
+    //   };
+    //   const this.displayControls = (bounds) => {
+    //     controls.className = 'active';
+    //     controls.style.position = 'absolute';
+    //     controls.style.left = (bounds.left + bounds.width / 2 - controls.offsetWidth / 2) + 'px';
+    //     controls.style.top = (bounds.top + bounds.height + 5) + 'px';
+    //     let format = quill.getFormat();
+    //     displayCurrentFormat(format);
+    //   };
+    //   const this.selectionChangeOff = (e) => {
+    //     let target = e.target;
+    //     if (!controls.contains(target)) {
+    //       this.resetToolbarView();
+    //     }
+    //   };
+    //   function displayCurrentFormat(format) {
+    //     this.resetToggledBtns();
+    //     for (let key in format) {
+    //       let current = format[key];
+    //       if (key === 'header') {
+    //         let hbtn = controls.querySelector(`#header-${current}-button`);
+    //         hbtn.classList.add('toggled');
+    //         hbtn.selected = true;
+    //       } else {
+    //         let btn = controls.querySelector(`button[format=${key}`);
+    //         btn.classList.add('toggled');
+    //         //maybe not necessary
+    //         btn.selected = true;
+    //       }
+    //       // if (current && typeof current === 'boolean') {
+    //       //   let btn = controls.querySelector(`.--p-${key}`);
+    //       //   btn.classList.add('toggled');
+    //       //   //maybe not necessary
+    //       //   btn.selected = true;
+    //       // } else {
+    //       //   let hbtn = controls.querySelector(`#header-${current}-button`);
+    //       //   hbtn.classList.add('toggled');
+    //       //   hbtn.selected = true;
+    //       // }
+    //     }
+    //   }
+    //   const this.resetToggledBtns = () => {
+    //     let arr = controls.querySelectorAll('.toggled');
+    //     for (let i = 0; i < arr.length; i++) {
+    //       arr[i].classList.remove('toggled');
+    //       arr[i].selected = false;
+    //     }
+    //   };
+    //
+    //   //TODO: better to return an obj ans set it all app in editor.init?
+    //   this.resetToolbarView();
+    //   setUpBtns();
+    // };
 
     //Register Formatting
     const registerFormatBlots = () => {
@@ -761,13 +903,13 @@ const noteApp = (function() {
     };
 
     const autosave = () => {
-      quill.on('text-change', notes.saveNote);
+      quill.on('text-change', handlers.saveNote);
     };
     const init = () => {
       registerToolbar();
       registerFormatBlots();
       instEditor();
-      setUpToolbars();
+      setUpFormatting();
       autosave();
     };
     return {
