@@ -16,15 +16,21 @@
   <div id="linkTooltip" class="hidden">
     <input type="text" class="" id="link-input" placeholder="insert url..." />
     <button for="link-input" type="submit">
-      INSERT URL
+      INSERT
     </button>
   </div>
 </div>
-<div id="sidebar-controls">
-  <button id="image-button"><i class="fa fa-camera"></i></button>
-  <button id="video-button"><i class="fa fa-play"></i></button>
-  <button id="tweet-button"><i class="fa fa-twitter"></i></button>
-  <button id="divider-button"><i class="fa fa-minus"></i></button>
+<div id="sidebarControls" class="hidden">
+  <button id="image-button" media="image"><i class="fa fa-camera"></i></button>
+  <button id="video-button" media="video"><i class="fa fa-play"></i></button>
+  <button id="tweet-button" media="tweet"><i class="fa fa-twitter"></i></button>
+  <button id="divider-button" media="divider"><i class="fa fa-minus"></i></button>
+  <div id="mediaSrc" class="hidden">
+    <input type="text" class="" id="mediaSrcInput" placeholder="insert url..." />
+    <button for="mediaSrcInput" type="submit">
+      INSERT
+    </button>
+  </div>
 </div>
   <div id="editor">
   <p>Hello World!</p>

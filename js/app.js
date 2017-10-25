@@ -722,12 +722,66 @@ const noteApp = (function() {
       };
     };
 
+    const setUpMediaBar = () => {
+      //
+      let mediaDiv = document.querySelector('#sidebarControls');
+      let mediaBtns = mediaDiv.querySelectorAll('buttons');
+      let mediaSrcDiv = mediaDiv.querySelector('#mediaSrc');
+      let mediaSrcInput = mediaSrcDiv.querySelector('input');
+
+      const mediaBarRule = () => {
+        quill.on('selection-change', function(range) {
+          console.log(range);
+          if (range.length === 0) {
+            mediaDiv.className = 'active';
+          } else {
+            mediaDiv.className = 'visible';
+          }
+        });
+      };
+
+      const setUpMediaBtns = () => {
+        mediaBtns.forEach(function(btn, i) {
+          btn.addEventListener('click', function(e) {
+            let mediaType = this.getAttribute('media');
+            applyMedia(this, mediaType);
+          });
+        });
+      };
+
+      //I can setup formatting bar functions as to used them here
+      const applyMedia = (btn, mediaType) => {
+        if (btn.selected) {
+          getMediaSrc(mediaType);
+        }
+        commons.changeVisibility([mediaDiv, mediaSrcDiv]);
+        mediaSrcInput.focus();
+        mediaSrcTooltipFix();
+      };
+      const getMediaSrc = (mediaType, url) => {
+        if (url) {
+          quill.format(mediaType, url);
+        } else {
+          quill.format(mediaType, false);
+          //TODO:net to select bt based on attr mediaType
+          // linkbtn.selected = true;
+        }
+        commons.changeVisibility([formats, linkBar]);
+        linkInput.value = '';
+        resetToolbarView();
+      };
+
+      mediaBarRule();
+
+    };
+
     const addKeyBindings = (fmtBar) => {
       //
       quill.keyboard.addBinding({
         key: 'K',
         shortKey: true
       }, function(range, context) {
+        //check is link format is already active from btn it should be from quill.getformat()
         let btn = document.querySelector('#link-button');
         fmtBar.displayLinkbar(btn);
       });
@@ -790,14 +844,14 @@ const noteApp = (function() {
       class ImageBlot extends BlockEmbed {
         static create(value) {
           let node = super.create();
-          node.setAttribute('alt', value.alt);
+          // node.setAttribute('alt', value.alt);
           node.setAttribute('src', value.url);
           return node;
         }
 
         static value(node) {
           return {
-            alt: node.getAttribute('alt'),
+            // alt: node.getAttribute('alt'),
             url: node.getAttribute('src')
           };
         }
@@ -821,6 +875,9 @@ const noteApp = (function() {
       let fmtBar = setUpFormattingBar();
       fmtBar.setUpBtns();
       fmtBar.resetToolbarView();
+
+      //init media Bar
+      setUpMediaBar();
 
       //addKeyBindings(fmtBar),
       addKeyBindings(fmtBar);
