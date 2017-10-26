@@ -588,6 +588,7 @@ const noteApp = (function() {
             resetToolbarView();
           }
         });
+        quill.on('selection-change', selectionChangeOn);
       };
       const applyFormat = (btn) => {
         let formatToApply = btn.getAttribute('format');
@@ -617,7 +618,7 @@ const noteApp = (function() {
         }
         commons.changeVisibility([formats, linkBar]);
         linkInput.focus();
-        linkTooltipFix();
+        invertSlectionListeners(true);
       };
       const insertUrl = (url) => {
         if (url) {
@@ -631,9 +632,14 @@ const noteApp = (function() {
         resetToolbarView();
       };
 
-      const linkTooltipFix = () => {
-        quill.off('selection-change');
-        document.addEventListener('click', selectionChangeOff);
+      const invertSlectionListeners = (bool) => {
+        if (bool) {
+          quill.off('selection-change', selectionChangeOn);
+          document.addEventListener('click', selectionChangeOff);
+        } else {
+          document.removeEventListener('click', selectionChangeOff);
+          quill.on('selection-change', selectionChangeOn);
+        }
       };
       const resetToolbarView = () => {
         controls.className = 'hidden';
@@ -642,10 +648,12 @@ const noteApp = (function() {
         controls.style.position = '';
         linkInput.value = '';
         document.removeEventListener('click', selectionChangeOff);
-        quill.off('selection-change');
-        quill.on('selection-change', selectionChangeOn);
+        invertSlectionListeners();
+        // quill.off('selection-change', selectionChangeOn);
+        // quill.on('selection-change', selectionChangeOn);
       };
       const selectionChangeOn = (range) => {
+        console.log(1);
         // quill.on('selection-change', function(range, oldRange, source) {
         if (range) {
           if (range.length > 0) {
@@ -730,14 +738,16 @@ const noteApp = (function() {
       let mediaSrcInput = mediaSrcDiv.querySelector('input');
 
       const mediaBarRule = () => {
-        quill.on('selection-change', function(range) {
-          console.log(range);
-          if (range.length === 0) {
-            mediaDiv.className = 'active';
-          } else {
-            mediaDiv.className = 'visible';
-          }
-        });
+        // quill.on('selection-change', function(range) {
+        //   console.log(range);
+        //   if (range.length === 0) {
+        //     console.log(range, 'active');
+        //     mediaDiv.className = 'active';
+        //   } else {
+        //     mediaDiv.className = 'hidden';
+        //     console.log(range, 'hidden');
+        //   }
+        // });
       };
 
       const setUpMediaBtns = () => {
