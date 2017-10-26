@@ -618,7 +618,7 @@ const noteApp = (function() {
         }
         commons.changeVisibility([formats, linkBar]);
         linkInput.focus();
-        invertSlectionListeners(true);
+        setSelectionListeners('off');
       };
       const insertUrl = (url) => {
         if (url) {
@@ -632,13 +632,21 @@ const noteApp = (function() {
         resetToolbarView();
       };
 
-      const invertSlectionListeners = (bool) => {
-        if (bool) {
-          quill.off('selection-change', selectionChangeOn);
-          document.addEventListener('click', selectionChangeOff);
-        } else {
-          document.removeEventListener('click', selectionChangeOff);
-          quill.on('selection-change', selectionChangeOn);
+      const setSelectionListeners = (value) => {
+        switch (value) {
+          // case 'on':
+          //   document.removeEventListener('click', selectionChangeOff);
+          //   quill.on('selection-change', selectionChangeOn);
+          //   break;
+          case 'off':
+            quill.off('selection-change', selectionChangeOn);
+            document.addEventListener('click', selectionChangeOff);
+            break;
+          default:
+            document.removeEventListener('click', selectionChangeOff);
+            quill.off('selection-change', selectionChangeOn);
+            quill.on('selection-change', selectionChangeOn);
+            break;
         }
       };
       const resetToolbarView = () => {
@@ -648,12 +656,11 @@ const noteApp = (function() {
         controls.style.position = '';
         linkInput.value = '';
         document.removeEventListener('click', selectionChangeOff);
-        invertSlectionListeners();
+        setSelectionListeners();
         // quill.off('selection-change', selectionChangeOn);
         // quill.on('selection-change', selectionChangeOn);
       };
       const selectionChangeOn = (range) => {
-        console.log(1);
         // quill.on('selection-change', function(range, oldRange, source) {
         if (range) {
           if (range.length > 0) {
