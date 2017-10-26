@@ -625,7 +625,7 @@ const noteApp = (function() {
           quill.format('link', url);
         } else {
           quill.format('link', false);
-          linkbtn.selected = true;
+          linkBtn.selected = true;
         }
         commons.changeVisibility([formats, linkBar]);
         linkInput.value = '';
