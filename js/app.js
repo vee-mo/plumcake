@@ -331,7 +331,6 @@ const todoApp = (function() {
     const renderFooter = (ui) => {
       let activeTodoCount = todoList.countActiveTodo();
       if (todos().length > 0) {
-
         //TODO: move where it fits -- below does not fit with footer
         if ((todos().length - activeTodoCount) === todos().length) {
           ui.toggleAllInput.checked = true;
@@ -349,7 +348,7 @@ const todoApp = (function() {
       //TODO: replace with buildTodoUI function
       let todoNotebook = document.getElementById('todoNotebook');
       let addTodoTextInput = document.getElementById('addTodoTextInput');
-      let todosFilter = document.getElementById('filters');
+      // let todosFilter = document.getElementById('filters');
       let clearCompletedBtn = document.getElementById('clearCompletedBtn');
       let toggleAllInput = document.getElementById('toggleAll');
       addTodoTextInput.addEventListener('keyup', function(event) {
@@ -393,14 +392,13 @@ const todoApp = (function() {
       });
     };
     const conveyCurrentFilter = () => {
-      let currentFilter = window.location.hash.slice(1) || 'all' ;
+      let currentFilter = window.location.hash.slice(1) || 'all';
       handlers.setFilter(currentFilter);
     };
     return {
       displayTodos: displayTodos,
       init: init
     };
-
   })();
   // view.init();
   return {
@@ -418,8 +416,8 @@ const switcher = (function() {
     xhr.setRequestHeader('Cache-Control', 'no-cache');
     //
     xhr.onreadystatechange = function() {
-      if (this.readyState !== 4) { return; }
-      if (this.status !== 200) { return; }// or whatever error handling you want
+      if (this.readyState !== 4) { return; } // eslint-disable-line  
+      if (this.status !== 200) {return;}// or whatever error handling you want
       playGround.innerHTML = this.responseText;
     };
     return xhr;
@@ -544,7 +542,7 @@ const noteApp = (function() {
   const editor = (function() {
     const registerToolbar = () => {
       Quill.register('modules/xtoolbar', function(quill, options) {
-        let container = document.querySelector(options.container);
+        // let container = document.querySelector(options.container);
         let mediaControls = document.querySelector(options.sidebar);
       });
     };
@@ -588,7 +586,7 @@ const noteApp = (function() {
             resetToolbarView();
           }
         });
-        quill.on('selection-change', selectionChangeOn);
+        // quill.on('selection-change', selectionChangeOn);
       };
       const applyFormat = (btn) => {
         let formatToApply = btn.getAttribute('format');
@@ -690,7 +688,7 @@ const noteApp = (function() {
       };
       const displayCurrentFormat = (format) => {
         resetToggledBtns();
-        for (let key in format) {
+        for (let key in format) { // eslint-disable-line
           let current = format[key];
           if (key === 'header') {
             let hbtn = controls.querySelector(`#header-${current}-button`);
@@ -745,16 +743,23 @@ const noteApp = (function() {
       let mediaSrcInput = mediaSrcDiv.querySelector('input');
 
       const mediaBarRule = () => {
-        // quill.on('selection-change', function(range) {
-        //   console.log(range);
-        //   if (range.length === 0) {
-        //     console.log(range, 'active');
-        //     mediaDiv.className = 'active';
-        //   } else {
-        //     mediaDiv.className = 'hidden';
-        //     console.log(range, 'hidden');
-        //   }
-        // });
+        //ok it works need to hide it on selection change with an emitter
+        quill.on('text-change', function(delta) {
+          let keyInserted = delta.ops[1].insert ? delta.ops[1].insert : null;
+          if (keyInserted === '\n') {
+            mediaDiv.className = 'active';
+            quill.on('selection-change', hideMediaBaronChange);
+          } else {
+            mediaDiv.className = 'hidden';
+          }
+        });
+        //oldrange at the init is null reference error!!!!
+        const hideMediaBaronChange = (range, oldRange) => {
+          if (range.index < oldRange.index) {
+            mediaDiv.className = 'hidden';
+            quill.off('selection-change', hideMediaBaronChange);
+          }
+        };
       };
 
       const setUpMediaBtns = () => {
@@ -789,7 +794,6 @@ const noteApp = (function() {
       };
 
       mediaBarRule();
-
     };
 
     const addKeyBindings = (fmtBar) => {
@@ -877,7 +881,6 @@ const noteApp = (function() {
       ImageBlot.tagName = 'img';
 
       Quill.register(ImageBlot);
-
     };
     const autosave = () => {
       quill.on('text-change', handlers.saveNote);
