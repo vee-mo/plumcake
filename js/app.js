@@ -272,7 +272,7 @@ const todoApp = (function() {
         toggleAllInput: document.getElementById('toggleAll'),
         todoCountSpan: document.getElementById('todoCountSpan'),
         clearCompletedBtn: document.getElementById('clearCompletedBtn'),
-        todoTemplate: function() {
+        TodoTemplate: function() {
           let elements = {
             //todosDiv: document.createElement('div'),
             todosLi: document.createElement('li'),
@@ -297,7 +297,7 @@ const todoApp = (function() {
       return todosUI;
     };
     const renderTodo = (todo, ui) => {
-      let template = new ui.todoTemplate();
+      let template = new ui.TodoTemplate();
       let todoTextWithCompletion = '';
       if (todo.completed === true) {
         template.todosCheckbox.checked = true;
@@ -417,8 +417,15 @@ const switcher = (function() {
     xhr.setRequestHeader('Cache-Control', 'no-cache');
     //
     xhr.onreadystatechange = function() {
+<<<<<<< HEAD
       if (this.readyState !== 4) { return; } //eslint-disable-line
       if (this.status !== 200) {return;}// or whatever error handling you want
+=======
+      if (this.readyState !== 4) { return; } // eslint-disable-line  
+      if (this.status !== 200) {
+        return; // or whatever error handling you want // eslint-disable-line
+      }
+>>>>>>> 880b1cc452b4d4fa92833ed789acbb379babf15b
       playGround.innerHTML = this.responseText;
     };
     return xhr;
@@ -530,7 +537,7 @@ const noteApp = (function() {
         section.appendChild(fileref);
         return fileref;
       } else if (filetype === 'css') { //if filename is an external CSS file
-        var fileref = document.createElement('link');
+        let fileref = document.createElement('link');
         fileref.setAttribute('rel', 'stylesheet');
         fileref.setAttribute('type', 'text/css');
         fileref.setAttribute('href', filename);
@@ -748,6 +755,7 @@ const noteApp = (function() {
 
       const mediaBarRule = () => {
         //ok it works need to hide it on selection change with an emitter
+<<<<<<< HEAD
         quill.on('editor-change', function(eventType, ...args) {
           console.log(eventType, args); //TEST
           if (quill.hasFocus() && eventType === 'selection-change' && args[0]) {
@@ -764,15 +772,30 @@ const noteApp = (function() {
             }
           } else {
             mediaDiv.className = 'hidden';
+=======
+        quill.on('editor-change', function(type, ...args) {
+          if (quill.hasFocus()) {
+            let bounds = quill.getBounds(quill.getSelection());
+            if (bounds.left === leftMostBound) {
+              mediaDiv.className = 'active';
+            } else {
+              mediaDiv.className = 'hidden';
+            }
+>>>>>>> 880b1cc452b4d4fa92833ed789acbb379babf15b
           }
           // let keyInserted = delta.ops[1].insert ? delta.ops[1].insert : null;
           // if (keyInserted === '\n') {
           //   mediaDiv.className = 'active';
+<<<<<<< HEAD
           //   quill.on('selection-change', hideMediaBaronChange);
+=======
+          //   quill.on('editor-change', hideMediaBarOnChange);
+>>>>>>> 880b1cc452b4d4fa92833ed789acbb379babf15b
           // } else {
           //   mediaDiv.className = 'hidden';
           // }
         });
+<<<<<<< HEAD
       };
       const listenForDelete = () => {
         let backtrace = (delta) => {
@@ -786,6 +809,16 @@ const noteApp = (function() {
         };
         quill.on('text-change', backtrace);
         // quill.off('text-change', backtrace);
+=======
+        //oldrange at the init is null reference error!!!!
+      //   const hideMediaBarOnChange = (type, ...args) => {
+      //     if (type === 'selection-change' && args[0] !== )
+      //     if (range.index < oldRange.index) {
+      //       mediaDiv.className = 'hidden';
+      //       quill.off('selection-change', hideMediaBarOnChange);
+      //     }
+      //   };
+>>>>>>> 880b1cc452b4d4fa92833ed789acbb379babf15b
       };
 
       const setUpMediaBtns = () => {
@@ -917,7 +950,7 @@ const noteApp = (function() {
       registerFormatBlots();
       instEditor();
 
-      //init formatting Bar
+      //init formatting bar
       let fmtBar = setUpFormattingBar();
       fmtBar.setUpBtns();
       fmtBar.resetToolbarView();
