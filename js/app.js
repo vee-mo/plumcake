@@ -750,7 +750,7 @@ const noteApp = (function() {
 
       const mediaBarRule = () => {
         //ok it works need to hide it on selection change with an emitter
-        quill.on('editor-change', function(type, ...args) {
+        quill.on('editor-change', function(type, range) {
           if (quill.hasFocus()) {
             let bounds = quill.getBounds(quill.getSelection());
             if (bounds.left === leftMostBound) {
@@ -759,6 +759,21 @@ const noteApp = (function() {
               mediaDiv.className = 'hidden';
             }
           }
+          
+          // goes in editor change above
+          // if (type !== 'selction-change') {
+          //     return;
+          //   }
+          // if (range === null) {
+          //   return;
+          // }
+          // let [block, offset] = quill.scroll.descendant(Block, range.index);
+          // if (block != null && block.domNode.firstChild instanceof HTMLBRElement) {
+          //   mediaDiv.className = 'active';
+          // } else {
+          //   mediaDiv.className = 'hidden';
+          // }
+          
           // let keyInserted = delta.ops[1].insert ? delta.ops[1].insert : null;
           // if (keyInserted === '\n') {
           //   mediaDiv.className = 'active';
@@ -767,14 +782,6 @@ const noteApp = (function() {
           //   mediaDiv.className = 'hidden';
           // }
         });
-        //oldrange at the init is null reference error!!!!
-      //   const hideMediaBarOnChange = (type, ...args) => {
-      //     if (type === 'selection-change' && args[0] !== )
-      //     if (range.index < oldRange.index) {
-      //       mediaDiv.className = 'hidden';
-      //       quill.off('selection-change', hideMediaBarOnChange);
-      //     }
-      //   };
       };
 
       const setUpMediaBtns = () => {
