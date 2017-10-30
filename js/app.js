@@ -417,15 +417,10 @@ const switcher = (function() {
     xhr.setRequestHeader('Cache-Control', 'no-cache');
     //
     xhr.onreadystatechange = function() {
-<<<<<<< HEAD
-      if (this.readyState !== 4) { return; } //eslint-disable-line
-      if (this.status !== 200) {return;}// or whatever error handling you want
-=======
       if (this.readyState !== 4) { return; } // eslint-disable-line  
       if (this.status !== 200) {
         return; // or whatever error handling you want // eslint-disable-line
       }
->>>>>>> 880b1cc452b4d4fa92833ed789acbb379babf15b
       playGround.innerHTML = this.responseText;
     };
     return xhr;
@@ -755,24 +750,6 @@ const noteApp = (function() {
 
       const mediaBarRule = () => {
         //ok it works need to hide it on selection change with an emitter
-<<<<<<< HEAD
-        quill.on('editor-change', function(eventType, ...args) {
-          console.log(eventType, args); //TEST
-          if (quill.hasFocus() && eventType === 'selection-change' && args[0]) {
-            let left = quill.getBounds(args[0]).left || '';
-            let oldLeft = quill.getBounds(args[1]).left || '';
-            if (left && left === leftMostBound && args[0].length === 0) {
-              mediaDiv.className = 'active';
-              //check if old range comes from an empty line
-              if (oldLeft === leftMostBound) {
-                listenForDelete();
-              }
-            } else {
-              mediaDiv.className = 'hidden';
-            }
-          } else {
-            mediaDiv.className = 'hidden';
-=======
         quill.on('editor-change', function(type, ...args) {
           if (quill.hasFocus()) {
             let bounds = quill.getBounds(quill.getSelection());
@@ -781,35 +758,15 @@ const noteApp = (function() {
             } else {
               mediaDiv.className = 'hidden';
             }
->>>>>>> 880b1cc452b4d4fa92833ed789acbb379babf15b
           }
           // let keyInserted = delta.ops[1].insert ? delta.ops[1].insert : null;
           // if (keyInserted === '\n') {
           //   mediaDiv.className = 'active';
-<<<<<<< HEAD
-          //   quill.on('selection-change', hideMediaBaronChange);
-=======
           //   quill.on('editor-change', hideMediaBarOnChange);
->>>>>>> 880b1cc452b4d4fa92833ed789acbb379babf15b
           // } else {
           //   mediaDiv.className = 'hidden';
           // }
         });
-<<<<<<< HEAD
-      };
-      const listenForDelete = () => {
-        let backtrace = (delta) => {
-          if (delta.ops[1].delete === 1) {
-            mediaDiv.className = 'active';
-            quill.off('text-change', backtrace);
-          } else {
-            mediaDiv.className = 'hidden';
-            quill.off('text-change', backtrace);
-          }
-        };
-        quill.on('text-change', backtrace);
-        // quill.off('text-change', backtrace);
-=======
         //oldrange at the init is null reference error!!!!
       //   const hideMediaBarOnChange = (type, ...args) => {
       //     if (type === 'selection-change' && args[0] !== )
@@ -818,7 +775,6 @@ const noteApp = (function() {
       //       quill.off('selection-change', hideMediaBarOnChange);
       //     }
       //   };
->>>>>>> 880b1cc452b4d4fa92833ed789acbb379babf15b
       };
 
       const setUpMediaBtns = () => {
