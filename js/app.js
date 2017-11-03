@@ -417,21 +417,12 @@ const switcher = (function() {
     xhr.setRequestHeader('Cache-Control', 'no-cache');
     //
     xhr.onreadystatechange = function() {
-<<<<<<< HEAD
-<<<<<<< HEAD
-      if (this.readyState !== 4) { return; } //eslint-disable-line
-      if (this.status !== 200) {return;}// or whatever error handling you want
-=======
-=======
->>>>>>> 2189666a55c61df3abf6aad70ef721bcf3b1e7e6
-      if (this.readyState !== 4) { return; } // eslint-disable-line  
+      if (this.readyState !== 4) {
+        return;
+      } // eslint-disable-line  
       if (this.status !== 200) {
         return; // or whatever error handling you want // eslint-disable-line
       }
-<<<<<<< HEAD
->>>>>>> 2189666a55c61df3abf6aad70ef721bcf3b1e7e6
-=======
->>>>>>> 2189666a55c61df3abf6aad70ef721bcf3b1e7e6
       playGround.innerHTML = this.responseText;
     };
     return xhr;
@@ -757,76 +748,10 @@ const noteApp = (function() {
       let mediaBtns = mediaDiv.querySelectorAll('buttons');
       let mediaSrcDiv = mediaDiv.querySelector('#mediaSrc');
       let mediaSrcInput = mediaSrcDiv.querySelector('input');
-<<<<<<< HEAD
-<<<<<<< HEAD
-      let leftMostBound = quill.getBounds(quill.getSelection(quill.setSelection(0))).left;
-
-      const mediaBarRule = () => {
-        //ok it works need to hide it on selection change with an emitter
-        quill.on('editor-change', function(eventType, ...args) {
-          console.log(eventType, args); //TEST
-          if (quill.hasFocus() && eventType === 'selection-change' && args[0]) {
-            let left = quill.getBounds(args[0]).left || '';
-            let oldLeft = quill.getBounds(args[1]).left || '';
-            if (left && left === leftMostBound && args[0].length === 0) {
-              mediaDiv.className = 'active';
-              //check if old range comes from an empty line
-              if (oldLeft === leftMostBound) {
-                listenForDelete();
-              }
-            } else {
-              mediaDiv.className = 'hidden';
-            }
-          } else {
-            mediaDiv.className = 'hidden';
-          }
-          // let keyInserted = delta.ops[1].insert ? delta.ops[1].insert : null;
-          // if (keyInserted === '\n') {
-          //   mediaDiv.className = 'active';
-          //   quill.on('selection-change', hideMediaBaronChange);
-          // } else {
-          //   mediaDiv.className = 'hidden';
-          // }
-=======
       // let leftMostBound = quill.getBounds(quill.getSelection(quill.setSelection(0))).left;
-      let Block = Quill.import('blots/block'); //TEMP
 
       const mediaBarRule = () => {
-        //ok it works need to hide it on selection change with an emitter
-        quill.on('editor-change', function(type, range) {
-          if (type !== 'selection-change') {
-            return;
-          }
-          if (range === null) {
-            return;
-          }
-          let [block, offset] = quill.scroll.descendant(Block, range.index);
-          if (block !== null && block.domNode.firstChild instanceof HTMLBRElement) {
-            mediaDiv.className = 'active';
-          } else {
-            mediaDiv.className = 'hidden';
-          }
->>>>>>> 2189666a55c61df3abf6aad70ef721bcf3b1e7e6
-        });
-      };
-      const listenForDelete = () => {
-        let backtrace = (delta) => {
-          if (delta.ops[1].delete === 1) {
-            mediaDiv.className = 'active';
-            quill.off('text-change', backtrace);
-          } else {
-            mediaDiv.className = 'hidden';
-            quill.off('text-change', backtrace);
-          }
-        };
-        quill.on('text-change', backtrace);
-        // quill.off('text-change', backtrace);
-=======
-      // let leftMostBound = quill.getBounds(quill.getSelection(quill.setSelection(0))).left;
       let Block = Quill.import('blots/block'); //TEMP
-
-<<<<<<< HEAD
-      const mediaBarRule = () => {
         //ok it works need to hide it on selection change with an emitter
         quill.on('editor-change', function(type, range) {
           if (type !== 'selection-change') {
@@ -842,11 +767,7 @@ const noteApp = (function() {
             mediaDiv.className = 'hidden';
           }
         });
->>>>>>> 2189666a55c61df3abf6aad70ef721bcf3b1e7e6
       };
-
-=======
->>>>>>> 2189666a55c61df3abf6aad70ef721bcf3b1e7e6
       const setUpMediaEls = () => {
         mediaBtns.forEach(function(btn, i) {
           btn.addEventListener('click', function(e) {
@@ -900,14 +821,7 @@ const noteApp = (function() {
       };
 
       mediaBarRule();
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
       setUpMediaEls();
->>>>>>> 2189666a55c61df3abf6aad70ef721bcf3b1e7e6
-=======
-      setUpMediaEls();
->>>>>>> 2189666a55c61df3abf6aad70ef721bcf3b1e7e6
     };
 
     const addKeyBindings = (fmtBar) => {
