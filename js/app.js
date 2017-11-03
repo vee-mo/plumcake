@@ -746,76 +746,81 @@ const noteApp = (function() {
       let mediaBtns = mediaDiv.querySelectorAll('buttons');
       let mediaSrcDiv = mediaDiv.querySelector('#mediaSrc');
       let mediaSrcInput = mediaSrcDiv.querySelector('input');
-      let leftMostBound = quill.getBounds(quill.getSelection(quill.setSelection(0))).left;
+      // let leftMostBound = quill.getBounds(quill.getSelection(quill.setSelection(0))).left;
+      let Block = Quill.import('blots/block'); //TEMP
 
       const mediaBarRule = () => {
         //ok it works need to hide it on selection change with an emitter
         quill.on('editor-change', function(type, range) {
-          if (quill.hasFocus()) {
-            let bounds = quill.getBounds(quill.getSelection());
-            if (bounds.left === leftMostBound) {
-              mediaDiv.className = 'active';
-            } else {
-              mediaDiv.className = 'hidden';
-            }
+          if (type !== 'selection-change') {
+            return;
           }
-          
-          // goes in editor change above
-          // if (type !== 'selction-change') {
-          //     return;
-          //   }
-          // if (range === null) {
-          //   return;
-          // }
-          // let [block, offset] = quill.scroll.descendant(Block, range.index);
-          // if (block != null && block.domNode.firstChild instanceof HTMLBRElement) {
-          //   mediaDiv.className = 'active';
-          // } else {
-          //   mediaDiv.className = 'hidden';
-          // }
-          
-          // let keyInserted = delta.ops[1].insert ? delta.ops[1].insert : null;
-          // if (keyInserted === '\n') {
-          //   mediaDiv.className = 'active';
-          //   quill.on('editor-change', hideMediaBarOnChange);
-          // } else {
-          //   mediaDiv.className = 'hidden';
-          // }
+          if (range === null) {
+            return;
+          }
+          let [block, offset] = quill.scroll.descendant(Block, range.index);
+          if (block !== null && block.domNode.firstChild instanceof HTMLBRElement) {
+            mediaDiv.className = 'active';
+          } else {
+            mediaDiv.className = 'hidden';
+          }
         });
       };
 
-      const setUpMediaBtns = () => {
+      const setUpMediaEls = () => {
         mediaBtns.forEach(function(btn, i) {
           btn.addEventListener('click', function(e) {
-            let mediaType = this.getAttribute('media');
-            applyMedia(this, mediaType);
+            let mediaType = btn.getAttribute('media');
+            // getMedia(btn, mediaType);
+            listenforSrc(mediaType);
           });
         });
       };
-
-      //I can setup formatting bar functions as to used them here
-      const applyMedia = (btn, mediaType) => {
-        if (btn.selected) {
-          getMediaSrc(mediaType);
+      const listenforSrc = (mediaType) => {
+        if (mediaType === 'divider') {
+          applyMedia(mediaType);
+          resetMediaBar();
+          return;
         }
+        displayMediaSrcBar();
+        mediaSrcInput.addEventListener('keyup', function(e) {
+          if (e.keyCode === ENTER_KEY) {
+            let src = this.value;
+            applyMedia(mediaType, src);
+            resetMediaBar();
+          }
+        });
+      };
+      const resetMediaBar = () => {
+        //remove listener from mediaSrcInput
+        let clone = mediaSrcInput.cloneNode(true);
+        mediaSrcDiv.replaceChild(clone, mediaSrcInput);
+        mediaSrcInput = clone;
+        commons.changeVisibility([mediaDiv, mediaSrcDiv]);
+      };
+
+      const displayMediaSrcBar = () => {
         commons.changeVisibility([mediaDiv, mediaSrcDiv]);
         mediaSrcInput.focus();
-        mediaSrcTooltipFix();
+        // mediaSrcTooltipFix();
       };
-      const getMediaSrc = (mediaType, url) => {
-        if (url) {
-          quill.format(mediaType, url);
+
+      const applyMedia = (mediaType, src) => {
+        let range = quill.getSelection(true);
+        if (!src && mediaType === 'divider') {
+          quill.insertEmbed(range.index, 'divider', true, Quill.sources.USER);
+          quill.setSelection(range.index + 1, Quill.sources.SILENT);
         } else {
-          quill.format(mediaType, false);
-          //TODO:net to select bt based on attr mediaType
-          // linkbtn.selected = true;
+          quill.insertEmbed(range.index, mediaType, src, true, Quill.sources.USER);
+          quill.setSelection(range.index + 1, Quill.sources.SILENT);
         }
-        commons.changeVisibility([formats, linkBar]);
-        linkInput.value = '';
+        // commons.changeVisibility([formats, linkBar]);
+        mediaSrcInput.value = '';
         resetToolbarView();
       };
 
       mediaBarRule();
+      setUpMediaEls();
     };
 
     const addKeyBindings = (fmtBar) => {
@@ -888,15 +893,13 @@ const noteApp = (function() {
         static create(value) {
           let node = super.create();
           // node.setAttribute('alt', value.alt);
-          node.setAttribute('src', value.url);
+          node.setAttribute('src', src);
           return node;
         }
 
         static value(node) {
-          return {
-            // alt: node.getAttribute('alt'),
-            url: node.getAttribute('src')
-          };
+          let src = node.getAttribute('src');
+          return src;
         }
       }
       ImageBlot.blotName = 'image';
