@@ -20,7 +20,7 @@ const commons = {
       ran = true;
       memo = func.apply(this, arguments);
       func = null;
-      console.log('ran'); //TEST
+      console.log('ran'); //FIXME: TEST
       return memo;
     };
   }
@@ -31,6 +31,9 @@ const todoApp = (function() {
   const ENTER_KEY = 13;
   const ESCAPE_KEY = 27;
 
+  //TODO: refactor by using pseudo-classical pattern for new todo and 
+  //new todolist as to prepare for the container app. Use the pubsubmit pattern as seen
+  //on modular JS over to youtube
   const todoList = (function() {
     let todos = [];
     // let filter;
@@ -147,15 +150,6 @@ const todoApp = (function() {
         return v.toString(16);
       });
     },
-    // store: function(namespace, data) {
-    //   if (arguments.length > 1) {
-    //     localStorage.setItem(namespace, JSON.stringify(data));
-    //   } else {
-    //     let storedData = localStorage.getItem(namespace);
-    //     todoList.todos = JSON.parse(storedData) || [];
-    //   }
-    // }
-  };
 
   const handlers = (function() {
     const addTodo = (event) => {
@@ -745,29 +739,30 @@ const noteApp = (function() {
     const setUpMediaBar = () => {
       //
       let mediaDiv = document.querySelector('#sidebarControls');
-      let mediaBtns = mediaDiv.querySelectorAll('buttons');
+      let mediaBtnsDiv = mediaDiv.querySelector('#mediaBtnsDiv');
+      let mediaBtns = mediaDiv.querySelectorAll('button');
       let mediaSrcDiv = mediaDiv.querySelector('#mediaSrc');
       let mediaSrcInput = mediaSrcDiv.querySelector('input');
       // let leftMostBound = quill.getBounds(quill.getSelection(quill.setSelection(0))).left;
 
-      const mediaBarRule = () => {
+    const mediaBarRule = () => {
       let Block = Quill.import('blots/block'); //TEMP
-        //ok it works need to hide it on selection change with an emitter
-        quill.on('editor-change', function(type, range) {
-          if (type !== 'selection-change') {
-            return;
-          }
-          if (range === null) {
-            return;
-          }
-          let [block, offset] = quill.scroll.descendant(Block, range.index);
-          if (block !== null && block.domNode.firstChild instanceof HTMLBRElement) {
-            mediaDiv.className = 'active';
-          } else {
-            mediaDiv.className = 'hidden';
-          }
-        });
-      };
+      //ok it works need to hide it on selection change with an emitter
+      quill.on('editor-change', function(type, range) {
+        if (type !== 'selection-change') {
+          return;
+        }
+        if (range === null) {
+          return;
+        }
+        let [block, offset] = quill.scroll.descendant(Block, range.index);
+        if (block !== null && block.domNode.firstChild instanceof HTMLBRElement) {
+          mediaDiv.className = 'active';
+        } else {
+          mediaDiv.className = 'hidden';
+        }
+      });
+    };
       const setUpMediaEls = () => {
         mediaBtns.forEach(function(btn, i) {
           btn.addEventListener('click', function(e) {
@@ -801,7 +796,7 @@ const noteApp = (function() {
       };
 
       const displayMediaSrcBar = () => {
-        commons.changeVisibility([mediaDiv, mediaSrcDiv]);
+        commons.changeVisibility([mediaSrcDiv, mediaBtnsDiv]);
         mediaSrcInput.focus();
         // mediaSrcTooltipFix();
       };
